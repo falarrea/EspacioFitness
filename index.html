@@ -33,7 +33,7 @@
         <h2 class="text-xl font-bold">Portal del Socio</h2>
         <p class="text-xs text-zinc-400">Ingresá tu DNI para acceder a tus turnos</p>
         
-        <input type="text" id="socio-id" placeholder="Insertar DNI" 
+        <input type="text" id="socio-id" placeholder="Ej: 94462725" 
                class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition text-center font-mono">
         
         <button onclick="buscarSocio()" 
@@ -68,7 +68,7 @@
             </div>
             <div class="text-right">
               <p class="text-xs text-zinc-400">Vencimiento</p>
-              <p id="socio-vencimiento" class="text-sm font-medium text-zinc-300">-</p>
+              <p id="socio-vencimiento" class="text-sm font-semibold text-zinc-300">-</p>
             </div>
           </div>
         </div>
@@ -139,7 +139,20 @@
           </div>
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
             <p class="text-xs text-zinc-400">🎂 Cumpleaños Hoy</p>
-            <p id="stat-cumples" class="text-xs font-semibold text-amber-400 mt-1">Ninguno</p>
+            <div id="stat-cumples" class="text-xs font-semibold text-amber-400 mt-1">Ninguno hoy</div>
+          </div>
+        </div>
+
+        <!-- APARTADO DE PRÓXIMOS VENCIMIENTOS (3 a 5 DÍAS) -->
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-3">
+          <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+            <h3 class="font-bold text-sm text-amber-400 flex items-center gap-2">
+              ⏰ Próximos Vencimientos (En los próximos 3 a 5 días)
+            </h3>
+            <span id="cant-proximos-venc" class="text-xs bg-amber-900/40 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded font-bold">0</span>
+          </div>
+          <div id="lista-proximos-vencimientos" class="space-y-2 max-h-48 overflow-y-auto text-xs">
+            <p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>
           </div>
         </div>
 
@@ -292,6 +305,31 @@
     actualizarTurnosDisponibles();
 
     // -------------------------------------------------------------
+    // FUNCIONES DE FORMATO DE FECHA (DD/MM/AAAA) Y CUMPLEAÑOS
+    // -------------------------------------------------------------
+    function formatFecha(fechaStr) {
+      if (!fechaStr) return '-';
+      const partes = fechaStr.split('T')[0].split('-');
+      if (partes.length < 3) return fechaStr;
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function esCumpleaniosHoy(fechaNacStr) {
+      if (!fechaNacStr) return false;
+      const partes = fechaNacStr.split('T')[0].split('-'); // ["1998", "07", "28"]
+      if (partes.length < 3) return false;
+
+      const diaNac = parseInt(partes[2], 10);
+      const mesNac = parseInt(partes[1], 10);
+
+      const hoyObj = new Date();
+      const diaHoy = hoyObj.getDate();
+      const mesHoy = hoyObj.getMonth() + 1;
+
+      return diaNac === diaHoy && mesNac === mesHoy;
+    }
+
+    // -------------------------------------------------------------
     // CONEXIÓN Y ESTADO DE API SUPABASE
     // -------------------------------------------------------------
     async function probarConexionSupabase() {
@@ -424,11 +462,11 @@
         socioActual = socio;
         document.getElementById('socio-nombre').textContent = `${socio.nombre} ${socio.apellido}`;
 
-        if (socio.fecha_nacimiento) {
-          const nac = new Date(socio.fecha_nacimiento);
-          if (hoy.getMonth() === nac.getMonth() && hoy.getDate() === nac.getDate() + 1) {
-            document.getElementById('socio-cumple-msg').classList.remove('hidden');
-          }
+        // Validación exacta de Cumpleaños
+        if (socio.fecha_nacimiento && esCumpleaniosHoy(socio.fecha_nacimiento)) {
+          document.getElementById('socio-cumple-msg').classList.remove('hidden');
+        } else {
+          document.getElementById('socio-cumple-msg').classList.add('hidden');
         }
         
         const badgeEstado = document.getElementById('socio-estado-pago');
@@ -436,7 +474,7 @@
           pagoActual = pagos[0];
           document.getElementById('socio-plan').textContent = pagoActual.plan || "Plan Activo";
           document.getElementById('socio-creditos').textContent = pagoActual.creditos_disponibles;
-          document.getElementById('socio-vencimiento').textContent = pagoActual.fecha_vencimiento;
+          document.getElementById('socio-vencimiento').textContent = formatFecha(pagoActual.fecha_vencimiento);
 
           const hoyStr = new Date().toISOString().split('T')[0];
           if (pagoActual.fecha_vencimiento < hoyStr) {
@@ -462,6 +500,7 @@
       }
     }
 
+    // CONFIRMAR RESERVA (REFORZADO CON LÍMITE DE 15 CUPOS POR TURNO/DÍA)
     async function confirmarReserva() {
       const msg = document.getElementById('reserva-mensaje');
       const btn = document.getElementById('btn-reservar');
@@ -470,45 +509,74 @@
 
       if (!turno) {
         msg.textContent = '⚠️ Seleccioná un turno válido.';
+        msg.className = 'text-xs text-center font-semibold text-amber-500';
         return;
       }
       if (!pagoActual || pagoActual.creditos_disponibles <= 0) {
         msg.textContent = '❌ No tenés créditos disponibles.';
+        msg.className = 'text-xs text-center font-semibold text-red-500';
         return;
       }
 
       btn.disabled = true;
       try {
-        const { count } = await _supabase.from('reservas').select('*', { count: 'exact', head: true }).eq('fecha', fecha).eq('turno', turno);
+        // 1. Contar cuántos socios ya reservaron exactamente esa fecha y hora
+        const { count, error: errCount } = await _supabase
+          .from('reservas')
+          .select('*', { count: 'exact', head: true })
+          .eq('fecha', fecha)
+          .eq('turno', turno);
+
+        if (errCount) throw errCount;
+
         if (count >= MAX_CUPO_POR_CLASE) {
-          msg.textContent = `⚠️ Turno completo (${count}/${MAX_CUPO_POR_CLASE}).`;
+          msg.textContent = `🚫 TURNO COMPLETO: Ya se alcanzaron los ${MAX_CUPO_POR_CLASE} cupos máximos permitidos para este horario.`;
+          msg.className = 'text-xs text-center font-bold text-red-500';
           btn.disabled = false;
           return;
         }
 
-        const { error: errReserva } = await _supabase.from('reservas').insert([{ socio_id: socioActual.id, fecha, turno, asistencia: false }]);
-        if (errReserva) {
-          msg.textContent = '⚠️ Ya tenés reserva en este turno o error de BD.';
+        // 2. Verificar que el mismo socio no tenga reserva repetida en este turno
+        const { data: reservaExistente } = await _supabase
+          .from('reservas')
+          .select('id')
+          .eq('socio_id', socioActual.id)
+          .eq('fecha', fecha)
+          .eq('turno', turno)
+          .maybeSingle();
+
+        if (reservaExistente) {
+          msg.textContent = '⚠️ Ya tenés una reserva en este mismo día y turno.';
+          msg.className = 'text-xs text-center font-semibold text-amber-500';
           btn.disabled = false;
           return;
         }
 
+        // 3. Registrar la nueva reserva
+        const { error: errReserva } = await _supabase
+          .from('reservas')
+          .insert([{ socio_id: socioActual.id, fecha, turno, asistencia: false }]);
+
+        if (errReserva) throw errReserva;
+
+        // 4. Descontar 1 crédito al socio
         const nuevosCreditos = pagoActual.creditos_disponibles - 1;
         await _supabase.from('pagos_creditos').update({ creditos_disponibles: nuevosCreditos }).eq('socio_id', socioActual.id);
 
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
-        msg.textContent = '✅ ¡Reserva realizada con éxito!';
-        msg.className = 'text-xs text-center font-semibold text-emerald-400';
+        msg.textContent = `✅ ¡Reserva realizada con éxito! (${count + 1}/${MAX_CUPO_POR_CLASE} cupos ocupados)`;
+        msg.className = 'text-xs text-center font-bold text-emerald-400';
       } catch (err) {
-        msg.textContent = '❌ Error al procesar reserva.';
+        msg.textContent = '❌ Error al procesar la reserva: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-red-500';
       } finally {
         btn.disabled = false;
       }
     }
 
     // -------------------------------------------------------------
-    // ADMINISTRADOR: FUNCIONES Y VISOR DE TABLAS
+    // ADMINISTRADOR: FUNCIONES Y METRICAS
     // -------------------------------------------------------------
     function toggleModoAdmin() {
       const vSocio = document.getElementById('vista-socio');
@@ -538,15 +606,70 @@
     }
 
     async function cargarStatsAdmin() {
+      const hoyObj = new Date();
+      const hoyStr = hoyObj.toISOString().split('T')[0];
+
+      // 1. Total de Socios y Cumpleaños Hoy
       const { data: socios } = await _supabase.from('socios').select('*');
       document.getElementById('stat-total-socios').textContent = socios ? socios.length : 0;
 
-      const hoyStr = new Date().toISOString().split('T')[0];
+      const cumplesHoy = (socios || []).filter(s => esCumpleaniosHoy(s.fecha_nacimiento));
+      const contenedorCumples = document.getElementById('stat-cumples');
+      if (cumplesHoy.length > 0) {
+        contenedorCumples.innerHTML = cumplesHoy.map(c => `🎂 <span class="font-bold text-amber-300">${c.nombre} ${c.apellido}</span> (DNI: ${c.id})`).join('<br>');
+      } else {
+        contenedorCumples.textContent = "Ninguno hoy";
+      }
+
+      // 2. Vencidos y Activos
       const { data: vencidos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
       document.getElementById('stat-vencidos').textContent = vencidos ? vencidos.length : 0;
 
       const { data: activos } = await _supabase.from('pagos_creditos').select('*').gte('fecha_vencimiento', hoyStr);
       document.getElementById('stat-planes-activos').textContent = activos ? activos.length : 0;
+
+      // 3. APARTADO DE PRÓXIMOS VENCIMIENTOS (De hoy a 5 días)
+      const en5DiasObj = new Date();
+      en5DiasObj.setDate(en5DiasObj.getDate() + 5);
+      const en5DiasStr = en5DiasObj.toISOString().split('T')[0];
+
+      const { data: proximosVenc } = await _supabase
+        .from('pagos_creditos')
+        .select('*')
+        .gte('fecha_vencimiento', hoyStr)
+        .lte('fecha_vencimiento', en5DiasStr)
+        .order('fecha_vencimiento', { ascending: true });
+
+      const listaVencElem = document.getElementById('lista-proximos-vencimientos');
+      const cantVencElem = document.getElementById('cant-proximos-venc');
+
+      if (proximosVenc && proximosVenc.length > 0) {
+        cantVencElem.textContent = proximosVenc.length;
+        listaVencElem.innerHTML = proximosVenc.map(item => {
+          // Calcular días restantes
+          const expDate = new Date(item.fecha_vencimiento + 'T00:00:00');
+          const hoyDate = new Date(hoyStr + 'T00:00:00');
+          const diffDias = Math.ceil((expDate - hoyDate) / (1000 * 60 * 60 * 24));
+
+          const nombreSocio = item.nombre ? item.nombre : `Socio ID: ${item.socio_id}`;
+
+          return `
+            <div class="flex justify-between items-center bg-zinc-800/80 p-2.5 rounded-lg border border-zinc-700/60">
+              <div>
+                <p class="font-bold text-zinc-100">${nombreSocio} <span class="text-[10px] text-zinc-400 font-normal">(DNI: ${item.socio_id})</span></p>
+                <p class="text-[11px] text-zinc-400">Plan: <span class="text-amber-400">${item.plan || 'S/N'}</span></p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono font-bold text-amber-300 text-xs">${formatFecha(item.fecha_vencimiento)}</p>
+                <p class="text-[10px] text-zinc-400 font-semibold">${diffDias === 0 ? 'Vence Hoy' : 'Vence en ' + diffDias + ' día(s)'}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        cantVencElem.textContent = "0";
+        listaVencElem.innerHTML = '<p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>';
+      }
     }
 
     async function guardarSocio() {
@@ -579,6 +702,7 @@
       }
     }
 
+    // REGISTRAR PAGO (INCLUYE NOMBRE DEL SOCIO Y METODO DE PAGO)
     async function registrarPago() {
       const socio_id = document.getElementById('pago-socio-id').value.trim();
       const idPlanSelect = document.getElementById('select-planes-admin').value;
@@ -597,9 +721,18 @@
         return;
       }
 
+      // Traer Nombre y Apellido del Socio para guardarlo en la tabla de pagos
+      const { data: datosSocio } = await _supabase
+        .from('socios')
+        .select('nombre, apellido')
+        .eq('id', socio_id)
+        .maybeSingle();
+
+      const nombreSocioCompleto = datosSocio ? `${datosSocio.nombre} ${datosSocio.apellido}` : '';
+
       const hoyStr = new Date().toISOString().split('T')[0];
 
-      // Verificamos si existe registro previo
+      // Verificar si ya existe registro previo
       const { data: existePago } = await _supabase
         .from('pagos_creditos')
         .select('id')
@@ -607,15 +740,16 @@
         .maybeSingle();
 
       let error;
-     const datosPago = {
+      const datosPago = {
         socio_id,
+        nombre: nombreSocioCompleto, // <-- Campo "nombre" guardado en pagos_creditos
         plan: nombrePlan,
         fecha_pago: hoyStr,
         fecha_vencimiento,
         creditos_totales: creditos,
         creditos_disponibles: creditos,
         Monto: monto,
-        metodo_pago: formaPago  // <--- Agregá esta línea
+        metodo_pago: formaPago
       };
 
       if (existePago) {
@@ -636,7 +770,7 @@
       }
     }
 
-    // VISOR UNIVERSAL DE CUALQUIER TABLA SUPABASE
+    // VISOR UNIVERSAL DE CUALQUIER TABLA SUPABASE (FORMATEA FECHAS EN DD/MM/AAAA)
     async function verTablaAdmin(nombreTabla) {
       const contenedor = document.getElementById('tabla-resultado-admin');
       contenedor.innerHTML = '<p class="text-zinc-400 animate-pulse">Consultando ' + nombreTabla + '...</p>';
@@ -665,6 +799,12 @@
         keys.forEach(k => {
           let val = row[k];
           if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
+          
+          // Formatear fechas YYYY-MM-DD automáticamente a DD/MM/AAAA en la visualización de la tabla
+          if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            val = formatFecha(val);
+          }
+
           html += `<td class="p-2 border border-zinc-800 font-mono text-[11px]">${val !== null ? val : '<span class="text-zinc-600">NULL</span>'}</td>`;
         });
         html += `</tr>`;
