@@ -176,8 +176,12 @@
                 <input type="text" id="nuevo-id" placeholder="DNI" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-mono">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Teléfono</label>
-                <input type="text" id="nuevo-telefono" placeholder="Ej: 381..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Estado Socio</label>
+                <select id="nuevo-estado" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-semibold">
+                  <option value="ACTIVO" class="text-emerald-400">🟢 ACTIVO</option>
+                  <option value="INACTIVO" class="text-red-400">🔴 INACTIVO</option>
+                  <option value="SUSPENDIDO" class="text-amber-400">🟡 SUSPENDIDO</option>
+                </select>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
@@ -190,11 +194,17 @@
                 <input type="text" id="nuevo-apellido" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
-            <div>
-              <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
-              <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-zinc-400">Teléfono</label>
+                <input type="text" id="nuevo-telefono" placeholder="Ej: 381..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
+                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
             </div>
-            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar Socio</button>
+            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar / Actualizar Socio</button>
             <p id="msg-admin-socio" class="text-xs text-center font-semibold"></p>
           </div>
 
@@ -213,17 +223,26 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Créditos Totales</label>
-                <input type="number" id="pago-creditos" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Método de Pago</label>
+                <select id="pago-metodo" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                  <option value="Efectivo">💵 Efectivo</option>
+                  <option value="Transferencia">🏦 Transferencia</option>
+                </select>
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Monto Abonado ($)</label>
                 <input type="number" id="pago-monto" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
-            <div>
-              <label class="text-xs text-zinc-400">Vencimiento</label>
-              <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-zinc-400">Créditos Totales</label>
+                <input type="number" id="pago-creditos" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400">Vencimiento</label>
+                <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
             </div>
             <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">Registrar Pago</button>
             <p id="msg-admin-pago" class="text-xs text-center font-semibold"></p>
@@ -254,7 +273,7 @@
 
   <script>
     const SUPABASE_URL = 'https://hhjpvoqmycsbxrnjosuu.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG'; // <--- COLOCÁ AQUÍ TU CLAVE ANON DE SUPABASE
+    const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG';
     const MAX_CUPO_POR_CLASE = 15;
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -536,6 +555,7 @@
       const apellido = document.getElementById('nuevo-apellido').value.trim();
       const telefono = document.getElementById('nuevo-telefono').value.trim();
       const fecha_nacimiento = document.getElementById('nuevo-nacimiento').value || null;
+      const estado = document.getElementById('nuevo-estado').value;
       const msg = document.getElementById('msg-admin-socio');
 
       if (!id || !nombre || !apellido) {
@@ -545,11 +565,11 @@
       }
 
       const { error } = await _supabase.from('socios').upsert([{ 
-        id, nombre, apellido, telefono, fecha_nacimiento, estado: 'ACTIVO' 
+        id, nombre, apellido, telefono, fecha_nacimiento, estado 
       }]);
 
       if (!error) {
-        msg.textContent = '✅ Socio guardado en la tabla.';
+        msg.textContent = `✅ Socio guardado (Estado: ${estado}).`;
         msg.className = 'text-xs text-emerald-400';
         document.getElementById('pago-socio-id').value = id;
         cargarStatsAdmin();
@@ -568,6 +588,7 @@
       const creditos = parseInt(document.getElementById('pago-creditos').value);
       const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
       const fecha_vencimiento = document.getElementById('pago-vencimiento').value;
+      const formaPago = document.getElementById('pago-metodo')?.value || 'Efectivo';
       const msg = document.getElementById('msg-admin-pago');
 
       if (!socio_id || !fecha_vencimiento || isNaN(creditos)) {
@@ -578,18 +599,34 @@
 
       const hoyStr = new Date().toISOString().split('T')[0];
 
-      const { error } = await _supabase.from('pagos_creditos').upsert([{
-        socio_id, 
-        plan: nombrePlan, 
+      // Verificamos si existe registro previo
+      const { data: existePago } = await _supabase
+        .from('pagos_creditos')
+        .select('id')
+        .eq('socio_id', socio_id)
+        .maybeSingle();
+
+      let error;
+      const datosPago = {
+        socio_id,
+        plan: nombrePlan,
         fecha_pago: hoyStr,
         fecha_vencimiento,
         creditos_totales: creditos,
-        creditos_disponibles: creditos, 
+        creditos_disponibles: creditos,
         Monto: monto
-      }], { onConflict: 'socio_id' });
+      };
+
+      if (existePago) {
+        const res = await _supabase.from('pagos_creditos').update(datosPago).eq('id', existePago.id);
+        error = res.error;
+      } else {
+        const res = await _supabase.from('pagos_creditos').insert([datosPago]);
+        error = res.error;
+      }
 
       if (!error) {
-        msg.textContent = '✅ Pago cargado a la tabla pagos_creditos.';
+        msg.textContent = `✅ Pago cargado correctamente (${formaPago}).`;
         msg.className = 'text-xs text-emerald-400';
         cargarStatsAdmin();
       } else {
