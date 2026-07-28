@@ -85,7 +85,6 @@
           <div>
             <label class="text-xs text-zinc-400 block mb-1">Turno Disponible</label>
             <select id="reserva-turno" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
-              <!-- Se completa automáticamente según el día elegido -->
             </select>
           </div>
 
@@ -138,7 +137,7 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-zinc-400">DNI / ID (Único)</label>
-                <input type="text" id="nuevo-id" placeholder="Ej: 12345678" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <input type="text" id="nuevo-id" placeholder="Ej: 94462725" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
@@ -175,7 +174,8 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-zinc-400">Nombre del Plan</label>
-                <select id="pago-plan" onchange="autoCompletarCreditos()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <select id="pago-plan" onchange="autoCompletarPlan()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                  <option value="Pase 25 Créditos">Pase 25 Clases</option>
                   <option value="Pase 12 Créditos">Pase 12 Clases</option>
                   <option value="Pase 8 Créditos">Pase 8 Clases</option>
                   <option value="Pase Diario">Pase Diario (1 Clase)</option>
@@ -184,13 +184,19 @@
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Créditos a Cargar</label>
-                <input type="number" id="pago-creditos" value="12" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <input type="number" id="pago-creditos" value="25" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
 
-            <div>
-              <label class="text-xs text-zinc-400">Fecha de Vencimiento</label>
-              <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-zinc-400">Monto Cobrado ($)</label>
+                <input type="number" id="pago-monto" placeholder="Ej: 15000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400">Fecha Vencimiento</label>
+                <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
             </div>
 
             <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">
@@ -224,8 +230,8 @@
   <!-- SCRIPT BASE DE DATOS Y LÓGICA -->
   <script>
     const SUPABASE_URL = 'https://hhjpvoqmycsbxrnjosuu.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG'; // <--- COLOCÁ ACÁ TU CLAVE DE SUPABASE
-    const MAX_CUPO_POR_CLASE = 15; // Límite máximo de alumnos por turno
+    const SUPABASE_KEY = 'TU_CLAVE_ANON_DE_SUPABASE_AQUI'; // <--- COLOCÁ ACÁ TU CLAVE DE SUPABASE
+    const MAX_CUPO_POR_CLASE = 15; 
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -258,8 +264,6 @@
 
       if (!inputFecha) return;
 
-      // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
-      // Ajuste de zona horaria local
       const partes = inputFecha.split('-');
       const fechaObj = new Date(partes[0], partes[1] - 1, partes[2]);
       const diaSemana = fechaObj.getDay();
@@ -313,7 +317,6 @@
         socioActual = socio;
         document.getElementById('socio-nombre').textContent = `${socio.nombre} ${socio.apellido}`;
 
-        // Alerta de Cumpleaños
         if (socio.fecha_nacimiento) {
           const nac = new Date(socio.fecha_nacimiento);
           if (hoy.getMonth() === nac.getMonth() && hoy.getDate() === nac.getDate()) {
@@ -321,7 +324,6 @@
           }
         }
         
-        // Estado del Pago
         const badgeEstado = document.getElementById('socio-estado-pago');
         if (pagos && pagos.length > 0) {
           pagoActual = pagos[0];
@@ -376,8 +378,7 @@
       msg.textContent = 'Verificando cupo...';
 
       try {
-        // Verificar Límite de Cupo por clase
-        const { count, error: errCount } = await _supabase
+        const { count } = await _supabase
           .from('reservas')
           .select('*', { count: 'exact', head: true })
           .eq('fecha', fecha)
@@ -390,7 +391,6 @@
           return;
         }
 
-        // Insertar Reserva
         const { error: errReserva } = await _supabase
           .from('reservas')
           .insert([{ socio_id: socioActual.id, fecha: fecha, turno: turno }]);
@@ -402,9 +402,8 @@
           return;
         }
 
-        // Descontar Crédito
         const nuevosCreditos = pagoActual.creditos_disponibles - 1;
-        await _supabase.from('pagos_creditos').update({ creditos_disponibles: nuevosCreditos }).eq('id', pagoActual.id);
+        await _supabase.from('pagos_creditos').update({ creditos_disponibles: nuevosCreditos }).eq('socio_id', socioActual.id);
 
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
@@ -437,7 +436,7 @@
 
     function verificarPinAdmin() {
       const pin = document.getElementById('admin-pin').value;
-      if (pin === 'admin123') { // Clave del admin
+      if (pin === 'admin123') { 
         document.getElementById('admin-login-box').classList.add('hidden');
         document.getElementById('admin-dashboard').classList.remove('hidden');
         cargarStatsAdmin();
@@ -446,25 +445,23 @@
       }
     }
 
-    function autoCompletarCreditos() {
+    function autoCompletarPlan() {
       const plan = document.getElementById('pago-plan').value;
       const inputCreditos = document.getElementById('pago-creditos');
-      if (plan === 'Pase 12 Créditos') inputCreditos.value = 12;
+      if (plan === 'Pase 25 Créditos') inputCreditos.value = 25;
+      else if (plan === 'Pase 12 Créditos') inputCreditos.value = 12;
       else if (plan === 'Pase 8 Créditos') inputCreditos.value = 8;
       else if (plan === 'Pase Diario') inputCreditos.value = 1;
     }
 
     async function cargarStatsAdmin() {
-      // Total Socios
       const { data: socios } = await _supabase.from('socios').select('*');
       document.getElementById('stat-total-socios').textContent = socios ? socios.length : 0;
 
-      // Vencidos
       const hoyStr = new Date().toISOString().split('T')[0];
       const { data: pagos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
       document.getElementById('stat-vencidos').textContent = pagos ? pagos.length : 0;
 
-      // Cumpleaños Hoy
       if (socios) {
         const cumples = socios.filter(s => {
           if (!s.fecha_nacimiento) return false;
@@ -496,7 +493,7 @@
       if (!error) {
         msg.textContent = '✅ Socio registrado correctamente.';
         msg.className = 'text-xs text-emerald-400';
-        document.getElementById('pago-socio-id').value = id; // Copia automáticamente el DNI al formulario de pago
+        document.getElementById('pago-socio-id').value = id; 
         cargarStatsAdmin();
       } else {
         msg.textContent = '❌ Error al guardar socio.';
@@ -508,23 +505,48 @@
       const socio_id = document.getElementById('pago-socio-id').value.trim();
       const plan = document.getElementById('pago-plan').value;
       const creditos = parseInt(document.getElementById('pago-creditos').value);
+      const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
       const vencimiento = document.getElementById('pago-vencimiento').value;
       const msg = document.getElementById('msg-admin-pago');
 
       if (!socio_id || !vencimiento) {
-        msg.textContent = 'Ingresá DNI del socio y fecha de vencimiento.';
-        msg.className = 'text-xs text-red-500';
+        msg.textContent = '⚠️ Ingresá DNI del socio y fecha de vencimiento.';
+        msg.className = 'text-xs text-amber-500';
         return;
       }
 
-      const { error } = await _supabase.from('pagos_creditos').upsert([{ socio_id, plan, creditos_disponibles: creditos, fecha_vencimiento: vencimiento }]);
+      msg.textContent = 'Procesando...';
+
+      // 1. Verificar si el socio existe antes de cargar el pago
+      const { data: socioExistente } = await _supabase
+        .from('socios')
+        .select('id')
+        .eq('id', socio_id)
+        .maybeSingle();
+
+      if (!socioExistente) {
+        msg.textContent = `⚠️ El socio con DNI ${socio_id} no está registrado. Cargalo primero en la Sección 1.`;
+        msg.className = 'text-xs text-amber-500';
+        return;
+      }
+
+      // 2. Registrar/Actualizar el pago
+      const { error } = await _supabase.from('pagos_creditos').upsert([
+        { 
+          socio_id: socio_id, 
+          plan: plan, 
+          creditos_disponibles: creditos, 
+          monto: monto,
+          fecha_vencimiento: vencimiento 
+        }
+      ], { onConflict: 'socio_id' });
 
       if (!error) {
         msg.textContent = '✅ Créditos y plan cargados con éxito.';
         msg.className = 'text-xs text-emerald-400';
         cargarStatsAdmin();
       } else {
-        msg.textContent = '❌ Error al registrar el pago.';
+        msg.textContent = '❌ Error de guardado: ' + error.message;
         msg.className = 'text-xs text-red-500';
       }
     }
@@ -544,7 +566,6 @@
         return;
       }
 
-      // Agrupar reservas por turno
       const turnos = {};
       reservas.forEach(r => {
         if (!turnos[r.turno]) turnos[r.turno] = [];
