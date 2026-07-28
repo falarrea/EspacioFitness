@@ -16,7 +16,7 @@
       <p class="text-xs text-zinc-400">Sistema de Gestión & Reservas</p>
     </div>
     <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-2 rounded-lg font-semibold border border-zinc-700 transition flex items-center gap-1">
-      🔐 Modos
+      🔐 Cambiar Vista (Admin/Socio)
     </button>
   </header>
 
@@ -79,17 +79,13 @@
           
           <div>
             <label class="text-xs text-zinc-400 block mb-1">Fecha</label>
-            <input type="date" id="reserva-fecha" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
+            <input type="date" id="reserva-fecha" onchange="actualizarTurnosDisponibles()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
           </div>
 
           <div>
-            <label class="text-xs text-zinc-400 block mb-1">Turno</label>
+            <label class="text-xs text-zinc-400 block mb-1">Turno Disponible</label>
             <select id="reserva-turno" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
-              <option value="08:00 Hs">08:00 Hs - Mañana</option>
-              <option value="10:00 Hs">10:00 Hs - Mañana</option>
-              <option value="18:00 Hs">18:00 Hs - Tarde</option>
-              <option value="19:00 Hs">19:00 Hs - Tarde</option>
-              <option value="20:00 Hs">20:00 Hs - Noche</option>
+              <!-- Se completa automáticamente según el día elegido -->
             </select>
           </div>
 
@@ -119,11 +115,11 @@
         <!-- RESUMEN RÁPIDO Y ALERTAS -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Total Socios</p>
+            <p class="text-xs text-zinc-400">Total Socios Registrados</p>
             <p id="stat-total-socios" class="text-2xl font-black text-white">-</p>
           </div>
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Morosos / Vencidos</p>
+            <p class="text-xs text-zinc-400">Planes Vencidos</p>
             <p id="stat-vencidos" class="text-2xl font-black text-red-500">-</p>
           </div>
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
@@ -135,69 +131,70 @@
         <!-- SECCIONES DE GESTIÓN -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <!-- FORMULARIO 1: REGISTRAR / EDITAR SOCIO -->
+          <!-- FORMULARIO 1: REGISTRAR NUEVO SOCIO -->
           <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
             <h3 class="font-bold border-b border-zinc-800 pb-2 text-red-500">1. Registrar Nuevo Socio</h3>
             
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-xs text-zinc-400">DNI / Código (ID)</label>
-                <input type="text" id="nuevo-id" placeholder="Ej: 123456" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+                <label class="text-xs text-zinc-400">DNI / ID (Único)</label>
+                <input type="text" id="nuevo-id" placeholder="Ej: 12345678" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
-                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-zinc-400">Nombre</label>
-                <input type="text" id="nuevo-nombre" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+                <input type="text" id="nuevo-nombre" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Apellido</label>
-                <input type="text" id="nuevo-apellido" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+                <input type="text" id="nuevo-apellido" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
 
-            <button onclick="guardarSocio()" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 font-bold py-2 rounded-lg text-xs">
-              Guardar Socio
+            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">
+              Guardar Nuevo Socio
             </button>
             <p id="msg-admin-socio" class="text-xs text-center font-semibold"></p>
           </div>
 
           <!-- FORMULARIO 2: REGISTRAR PAGO / RENOVAR PLAN -->
           <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-500">2. Cargar Pago / Renovación</h3>
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-500">2. Cargar Créditos / Renovar Plan</h3>
             
             <div>
               <label class="text-xs text-zinc-400">DNI / ID del Socio</label>
-              <input type="text" id="pago-socio-id" placeholder="Buscar por DNI" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+              <input type="text" id="pago-socio-id" placeholder="Ingresá DNI del socio" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-zinc-400">Nombre del Plan</label>
-                <select id="pago-plan" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
-                  <option value="Pase Libre 12 Créditos">Pase Libre (12 Clases)</option>
+                <select id="pago-plan" onchange="autoCompletarCreditos()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                  <option value="Pase 12 Créditos">Pase 12 Clases</option>
                   <option value="Pase 8 Créditos">Pase 8 Clases</option>
-                  <option value="Pase Diario 1 Crédito">Pase Diario (1 Clase)</option>
+                  <option value="Pase Diario">Pase Diario (1 Clase)</option>
+                  <option value="Personalizado">Personalizado</option>
                 </select>
               </div>
               <div>
                 <label class="text-xs text-zinc-400">Créditos a Cargar</label>
-                <input type="number" id="pago-creditos" value="12" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+                <input type="number" id="pago-creditos" value="12" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
 
             <div>
               <label class="text-xs text-zinc-400">Fecha de Vencimiento</label>
-              <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs">
+              <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
             </div>
 
-            <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white">
-              Registrar Cobro
+            <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">
+              Registrar Cobro y Créditos
             </button>
             <p id="msg-admin-pago" class="text-xs text-center font-semibold"></p>
           </div>
@@ -209,8 +206,8 @@
           <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
             <h3 class="font-bold text-amber-500">3. Control de Asistencia y Cupos por Clase</h3>
             <div class="flex gap-2">
-              <input type="date" id="filtro-fecha-clase" class="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs">
-              <button onclick="cargarAsistencia()" class="bg-amber-600 text-xs px-3 py-1 rounded font-bold">Ver Alumnos</button>
+              <input type="date" id="filtro-fecha-clase" class="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white">
+              <button onclick="cargarAsistencia()" class="bg-amber-600 hover:bg-amber-700 text-xs px-3 py-1 rounded font-bold transition">Ver Inscriptos</button>
             </div>
           </div>
 
@@ -228,15 +225,61 @@
   <script>
     const SUPABASE_URL = 'https://hhjpvoqmycsbxrnjosuu.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG'; // <--- COLOCÁ ACÁ TU CLAVE DE SUPABASE
-    const MAX_CUPO_POR_CLASE = 15; // Límite de alumnos por turno
+    const MAX_CUPO_POR_CLASE = 15; // Límite máximo de alumnos por turno
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let socioActual = null;
     let pagoActual = null;
 
-    document.getElementById('reserva-fecha').valueAsDate = new Date();
-    document.getElementById('filtro-fecha-clase').valueAsDate = new Date();
+    // Inicializar fechas
+    const hoy = new Date();
+    document.getElementById('reserva-fecha').valueAsDate = hoy;
+    document.getElementById('filtro-fecha-clase').valueAsDate = hoy;
+    actualizarTurnosDisponibles();
+
+    // Fecha por defecto de vencimiento (30 días desde hoy)
+    const enUnMes = new Date();
+    enUnMes.setDate(enUnMes.getDate() + 30);
+    document.getElementById('pago-vencimiento').valueAsDate = enUnMes;
+
+    // -------------------------------------------------------------
+    // LÓGICA DE HORARIOS SEGÚN EL DÍA ELEGIDO
+    // -------------------------------------------------------------
+    function actualizarTurnosDisponibles() {
+      const inputFecha = document.getElementById('reserva-fecha').value;
+      const selectTurno = document.getElementById('reserva-turno');
+      const btnReservar = document.getElementById('btn-reservar');
+      const msg = document.getElementById('reserva-mensaje');
+
+      selectTurno.innerHTML = '';
+      msg.textContent = '';
+      btnReservar.disabled = false;
+
+      if (!inputFecha) return;
+
+      // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+      // Ajuste de zona horaria local
+      const partes = inputFecha.split('-');
+      const fechaObj = new Date(partes[0], partes[1] - 1, partes[2]);
+      const diaSemana = fechaObj.getDay();
+
+      if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // Lunes, Miércoles, Viernes
+        selectTurno.innerHTML = `
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs - Tarde</option>
+          <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs - Noche</option>
+        `;
+      } else if (diaSemana === 2 || diaSemana === 4) { // Martes, Jueves
+        selectTurno.innerHTML = `
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs - Tarde</option>
+        `;
+      } else { // Sábado o Domingo
+        selectTurno.innerHTML = `<option value="">Cerrado</option>`;
+        msg.textContent = '❌ El gimnasio permanece cerrado los fines de semana.';
+        msg.className = 'text-xs text-center font-semibold text-amber-500';
+        btnReservar.disabled = true;
+      }
+    }
 
     // -------------------------------------------------------------
     // VISTA SOCIO
@@ -247,7 +290,7 @@
       
       if (!socioId) return;
 
-      msg.textContent = 'Buscando...';
+      msg.textContent = 'Buscando socio...';
 
       try {
         const { data: socio, error: errSocio } = await _supabase
@@ -257,7 +300,7 @@
           .maybeSingle();
 
         if (errSocio || !socio) {
-          msg.textContent = 'Socio no encontrado.';
+          msg.textContent = 'Socio no encontrado. Solicitá tu registro en recepción.';
           msg.className = 'text-sm font-semibold text-red-500';
           return;
         }
@@ -272,7 +315,6 @@
 
         // Alerta de Cumpleaños
         if (socio.fecha_nacimiento) {
-          const hoy = new Date();
           const nac = new Date(socio.fecha_nacimiento);
           if (hoy.getMonth() === nac.getMonth() && hoy.getDate() === nac.getDate()) {
             document.getElementById('socio-cumple-msg').classList.remove('hidden');
@@ -318,6 +360,12 @@
       const fecha = document.getElementById('reserva-fecha').value;
       const turno = document.getElementById('reserva-turno').value;
 
+      if (!turno) {
+        msg.textContent = '⚠️ Seleccioná un turno válido.';
+        msg.className = 'text-xs text-center font-semibold text-amber-500';
+        return;
+      }
+
       if (!pagoActual || pagoActual.creditos_disponibles <= 0) {
         msg.textContent = '❌ No tenés créditos disponibles.';
         msg.className = 'text-xs text-center font-semibold text-red-500';
@@ -336,7 +384,7 @@
           .eq('turno', turno);
 
         if (count >= MAX_CUPO_POR_CLASE) {
-          msg.textContent = `⚠️ Clase llena (${count}/${MAX_CUPO_POR_CLASE} inscriptos). Seleccioná otro turno.`;
+          msg.textContent = `⚠️ Turno lleno (${count}/${MAX_CUPO_POR_CLASE} alumnos). Elige otro turno.`;
           msg.className = 'text-xs text-center font-semibold text-amber-500';
           btn.disabled = false;
           return;
@@ -348,7 +396,7 @@
           .insert([{ socio_id: socioActual.id, fecha: fecha, turno: turno }]);
 
         if (errReserva) {
-          msg.textContent = errReserva.code === '23505' ? '⚠️ Ya tenés reserva en este turno.' : '❌ Error al reservar.';
+          msg.textContent = errReserva.code === '23505' ? '⚠️ Ya tenés una reserva en este turno.' : '❌ Error al registrar reserva.';
           msg.className = 'text-xs text-center font-semibold text-amber-500';
           btn.disabled = false;
           return;
@@ -361,7 +409,7 @@
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
 
-        msg.textContent = '✅ ¡Reserva confirmada con éxito!';
+        msg.textContent = '✅ ¡Reserva realizada con éxito!';
         msg.className = 'text-xs text-center font-semibold text-emerald-400';
 
       } catch (err) {
@@ -389,13 +437,21 @@
 
     function verificarPinAdmin() {
       const pin = document.getElementById('admin-pin').value;
-      if (pin === 'admin123') { // Clave por defecto
+      if (pin === 'admin123') { // Clave del admin
         document.getElementById('admin-login-box').classList.add('hidden');
         document.getElementById('admin-dashboard').classList.remove('hidden');
         cargarStatsAdmin();
       } else {
         alert('Clave incorrecta.');
       }
+    }
+
+    function autoCompletarCreditos() {
+      const plan = document.getElementById('pago-plan').value;
+      const inputCreditos = document.getElementById('pago-creditos');
+      if (plan === 'Pase 12 Créditos') inputCreditos.value = 12;
+      else if (plan === 'Pase 8 Créditos') inputCreditos.value = 8;
+      else if (plan === 'Pase Diario') inputCreditos.value = 1;
     }
 
     async function cargarStatsAdmin() {
@@ -410,7 +466,6 @@
 
       // Cumpleaños Hoy
       if (socios) {
-        const hoy = new Date();
         const cumples = socios.filter(s => {
           if (!s.fecha_nacimiento) return false;
           const nac = new Date(s.fecha_nacimiento);
@@ -431,7 +486,7 @@
       const msg = document.getElementById('msg-admin-socio');
 
       if (!id || !nombre || !apellido) {
-        msg.textContent = 'Completá los campos obligatorios.';
+        msg.textContent = 'Completá DNI, Nombre y Apellido.';
         msg.className = 'text-xs text-red-500';
         return;
       }
@@ -439,11 +494,12 @@
       const { error } = await _supabase.from('socios').upsert([{ id, nombre, apellido, fecha_nacimiento: nacimiento }]);
 
       if (!error) {
-        msg.textContent = '✅ Socio guardado con éxito.';
+        msg.textContent = '✅ Socio registrado correctamente.';
         msg.className = 'text-xs text-emerald-400';
+        document.getElementById('pago-socio-id').value = id; // Copia automáticamente el DNI al formulario de pago
         cargarStatsAdmin();
       } else {
-        msg.textContent = '❌ Error al guardar.';
+        msg.textContent = '❌ Error al guardar socio.';
         msg.className = 'text-xs text-red-500';
       }
     }
@@ -456,7 +512,7 @@
       const msg = document.getElementById('msg-admin-pago');
 
       if (!socio_id || !vencimiento) {
-        msg.textContent = 'Ingresá DNI y fecha de vencimiento.';
+        msg.textContent = 'Ingresá DNI del socio y fecha de vencimiento.';
         msg.className = 'text-xs text-red-500';
         return;
       }
@@ -464,11 +520,11 @@
       const { error } = await _supabase.from('pagos_creditos').upsert([{ socio_id, plan, creditos_disponibles: creditos, fecha_vencimiento: vencimiento }]);
 
       if (!error) {
-        msg.textContent = '✅ Pago cargado correctamente.';
+        msg.textContent = '✅ Créditos y plan cargados con éxito.';
         msg.className = 'text-xs text-emerald-400';
         cargarStatsAdmin();
       } else {
-        msg.textContent = '❌ Error al registrar pago.';
+        msg.textContent = '❌ Error al registrar el pago.';
         msg.className = 'text-xs text-red-500';
       }
     }
@@ -476,15 +532,15 @@
     async function cargarAsistencia() {
       const fecha = document.getElementById('filtro-fecha-clase').value;
       const contenedor = document.getElementById('lista-asistencia');
-      contenedor.innerHTML = 'Cargando...';
+      contenedor.innerHTML = 'Buscando reservas...';
 
-      const { data: reservas, error } = await _supabase
+      const { data: reservas } = await _supabase
         .from('reservas')
         .select('*, socios(nombre, apellido)')
         .eq('fecha', fecha);
 
       if (!reservas || reservas.length === 0) {
-        contenedor.innerHTML = '<p class="text-xs text-zinc-500">No hay reservas registradas para esta fecha.</p>';
+        contenedor.innerHTML = '<p class="text-xs text-zinc-500 italic">No hay alumnos inscriptos para esta fecha.</p>';
         return;
       }
 
