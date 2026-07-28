@@ -3,37 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Espacio Fitness - Gestión y Reservas</title>
+  <title>Espacio Fitness - Control Integral</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col items-center p-4 sm:p-6">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col items-center p-4 sm:p-6 font-sans">
 
   <!-- HEADER -->
-  <header class="w-full max-w-4xl flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+  <header class="w-full max-w-5xl flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
     <div>
       <h1 class="text-2xl font-black text-red-600 tracking-wider">ESPACIO FITNESS</h1>
-      <p class="text-xs text-zinc-400">Sistema de Gestión & Reservas</p>
+      <p class="text-xs text-zinc-400">Sistema Integral de Gestión & Reservas</p>
     </div>
-    <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-2 rounded-lg font-semibold border border-zinc-700 transition flex items-center gap-1">
-      🔐 Cambiar Vista (Admin/Socio)
+    <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-2 rounded-lg font-semibold border border-zinc-700 transition flex items-center gap-2">
+      🔒 <span id="texto-btn-vista">Modo Administrador</span>
     </button>
   </header>
 
   <!-- CONTENEDOR PRINCIPAL -->
-  <main class="w-full max-w-4xl">
+  <main class="w-full max-w-5xl">
 
     <!-- ========================================== -->
-    <!-- 1. VISTA SOCIO (RESERVAS)                 -->
+    <!-- 1. VISTA SOCIO (RESERVAS & PORTAL)         -->
     <!-- ========================================== -->
     <section id="vista-socio" class="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
       
       <!-- INGRESO DNI -->
       <div id="login-section" class="space-y-4 text-center">
         <h2 class="text-xl font-bold">Portal del Socio</h2>
-        <p class="text-xs text-zinc-400">Ingresá tu DNI o Código de socio para ingresar</p>
+        <p class="text-xs text-zinc-400">Ingresá tu DNI para acceder a tus turnos</p>
         
-        <input type="text" id="socio-id" placeholder="Ej: 12345678" 
+        <input type="text" id="socio-id" placeholder="Ej: 94462725" 
                class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition text-center font-mono">
         
         <button onclick="buscarSocio()" 
@@ -97,24 +97,36 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 2. VISTA ADMINISTRADOR                     -->
+    <!-- 2. VISTA ADMINISTRADOR (PANEL DE CONTROL)  -->
     <!-- ========================================== -->
     <section id="vista-admin" class="hidden space-y-6">
 
       <!-- LOGIN ADMIN -->
       <div id="admin-login-box" class="max-w-xs mx-auto bg-zinc-900 p-6 rounded-xl border border-zinc-800 text-center space-y-4">
         <h2 class="font-bold text-lg">Acceso Administrador</h2>
-        <input type="password" id="admin-pin" placeholder="Clave de acceso" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-center text-white focus:outline-none focus:border-red-600">
+        <input type="password" id="admin-pin" placeholder="Clave (admin123)" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-center text-white focus:outline-none focus:border-red-600">
         <button onclick="verificarPinAdmin()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg">Entrar</button>
       </div>
 
       <!-- DASHBOARD ADMIN -->
       <div id="admin-dashboard" class="hidden space-y-6">
 
-        <!-- RESUMEN RÁPIDO Y ALERTAS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- CARD ESTADO DE API SUPABASE -->
+        <div id="api-status-card" class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="status-dot" class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span>
+            <div>
+              <p class="text-sm font-bold text-white">Integración con Supabase API</p>
+              <p id="status-text" class="text-xs text-zinc-400">Verificando conexión en tiempo real...</p>
+            </div>
+          </div>
+          <button onclick="probarConexionSupabase()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded border border-zinc-700">Comprobar API</button>
+        </div>
+
+        <!-- RESUMEN / METRICAS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Total Socios Registrados</p>
+            <p class="text-xs text-zinc-400">Total Socios</p>
             <p id="stat-total-socios" class="text-2xl font-black text-white">-</p>
           </div>
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
@@ -122,30 +134,53 @@
             <p id="stat-vencidos" class="text-2xl font-black text-red-500">-</p>
           </div>
           <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">🎂 Cumpleaños de hoy</p>
-            <p id="stat-cumples" class="text-sm font-semibold text-amber-400 mt-1">Sin cumpleaños hoy</p>
+            <p class="text-xs text-zinc-400">Planes Activos</p>
+            <p id="stat-planes-activos" class="text-2xl font-black text-emerald-500">-</p>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <p class="text-xs text-zinc-400">🎂 Cumpleaños Hoy</p>
+            <p id="stat-cumples" class="text-xs font-semibold text-amber-400 mt-1">Ninguno</p>
           </div>
         </div>
 
-        <!-- SECCIONES DE GESTIÓN -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- FORMULARIOS DE GESTIÓN -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <!-- FORMULARIO 1: REGISTRAR NUEVO SOCIO -->
+          <!-- 1. CREAR PLAN EN CATÁLOGO -->
           <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-red-500">1. Registrar Nuevo Socio</h3>
-            
-            <div class="grid grid-cols-2 gap-3">
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-amber-500 text-sm">1. Crear Plan / Oferta</h3>
+            <div>
+              <label class="text-xs text-zinc-400">Nombre del Plan</label>
+              <input type="text" id="plan-nombre" placeholder="Ej: Pase Libre / 12 Clases" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">DNI / ID (Único)</label>
-                <input type="text" id="nuevo-id" placeholder="Ej: 94462725" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Créditos</label>
+                <input type="number" id="plan-creditos" placeholder="12" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
-                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Precio ($)</label>
+                <input type="number" id="plan-precio" placeholder="20000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
+            <button onclick="guardarNuevoPlan()" class="w-full bg-amber-600 hover:bg-amber-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar en Tabla 'planes'</button>
+            <p id="msg-admin-plan" class="text-xs text-center font-semibold"></p>
+          </div>
 
-            <div class="grid grid-cols-2 gap-3">
+          <!-- 2. REGISTRAR O EDITAR SOCIO -->
+          <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-red-500 text-sm">2. Registrar Socio</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-zinc-400">DNI / ID</label>
+                <input type="text" id="nuevo-id" placeholder="DNI" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-mono">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400">Teléfono</label>
+                <input type="text" id="nuevo-telefono" placeholder="Ej: 381..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="text-xs text-zinc-400">Nombre</label>
                 <input type="text" id="nuevo-nombre" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
@@ -155,70 +190,60 @@
                 <input type="text" id="nuevo-apellido" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
-
-            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">
-              Guardar Nuevo Socio
-            </button>
+            <div>
+              <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
+              <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            </div>
+            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar Socio</button>
             <p id="msg-admin-socio" class="text-xs text-center font-semibold"></p>
           </div>
 
-          <!-- FORMULARIO 2: REGISTRAR PAGO / RENOVAR PLAN -->
+          <!-- 3. ASIGNAR PAGO Y CRÉDITOS -->
           <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-500">2. Cargar Créditos / Renovar Plan</h3>
-            
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-500 text-sm">3. Cargar Pago / Plan a Socio</h3>
             <div>
-              <label class="text-xs text-zinc-400">DNI / ID del Socio</label>
-              <input type="text" id="pago-socio-id" placeholder="Ingresá DNI del socio" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              <label class="text-xs text-zinc-400">DNI del Socio</label>
+              <input type="text" id="pago-socio-id" placeholder="DNI exacto" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-mono">
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-xs text-zinc-400">Nombre del Plan</label>
-                <select id="pago-plan" onchange="autoCompletarPlan()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
-                  <option value="Pase 25 Créditos">Pase 25 Clases</option>
-                  <option value="Pase 12 Créditos">Pase 12 Clases</option>
-                  <option value="Pase 8 Créditos">Pase 8 Clases</option>
-                  <option value="Pase Diario">Pase Diario (1 Clase)</option>
-                  <option value="Personalizado">Personalizado</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400">Créditos a Cargar</label>
-                <input type="number" id="pago-creditos" value="25" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
-              </div>
+            <div>
+              <label class="text-xs text-zinc-400">Seleccionar Plan (de la Tabla Planes)</label>
+              <select id="select-planes-admin" onchange="seleccionarPlanCatalogo()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <option value="">Cargando planes...</option>
+              </select>
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Monto Cobrado ($)</label>
-                <input type="number" id="pago-monto" placeholder="Ej: 15000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Créditos Totales</label>
+                <input type="number" id="pago-creditos" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Fecha Vencimiento</label>
-                <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-xs text-zinc-400">Monto Abonado ($)</label>
+                <input type="number" id="pago-monto" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
               </div>
             </div>
-
-            <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">
-              Registrar Cobro y Créditos
-            </button>
+            <div>
+              <label class="text-xs text-zinc-400">Vencimiento</label>
+              <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+            </div>
+            <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">Registrar Pago</button>
             <p id="msg-admin-pago" class="text-xs text-center font-semibold"></p>
           </div>
 
         </div>
 
-        <!-- VER PLANILLAS DE CLASES (RESERVAS Y CUPOS) -->
+        <!-- VISOR DE TABLAS EN TIEMPO REAL -->
         <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-          <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-            <h3 class="font-bold text-amber-500">3. Control de Asistencia y Cupos por Clase</h3>
-            <div class="flex gap-2">
-              <input type="date" id="filtro-fecha-clase" class="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white">
-              <button onclick="cargarAsistencia()" class="bg-amber-600 hover:bg-amber-700 text-xs px-3 py-1 rounded font-bold transition">Ver Inscriptos</button>
+          <div class="flex flex-wrap justify-between items-center border-b border-zinc-800 pb-3 gap-2">
+            <h3 class="font-bold text-sm text-zinc-300">🔎 Visor Directo de Tablas Supabase</h3>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="verTablaAdmin('planes')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">🏷️ Planes</button>
+              <button onclick="verTablaAdmin('socios')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">👥 Socios</button>
+              <button onclick="verTablaAdmin('pagos_creditos')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">💳 Pagos</button>
+              <button onclick="verTablaAdmin('reservas')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">📅 Reservas</button>
             </div>
           </div>
-
-          <div id="lista-asistencia" class="space-y-3">
-            <p class="text-xs text-zinc-500 italic">Seleccioná una fecha para consultar los alumnos inscriptos.</p>
+          <div id="tabla-resultado-admin" class="overflow-x-auto max-h-72 text-xs text-zinc-300">
+            <p class="text-zinc-500 italic text-center py-4">Haz clic en cualquiera de los botones para ver el contenido de la tabla.</p>
           </div>
         </div>
 
@@ -227,30 +252,103 @@
 
   </main>
 
-  <!-- SCRIPT BASE DE DATOS Y LÓGICA -->
   <script>
     const SUPABASE_URL = 'https://hhjpvoqmycsbxrnjosuu.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG'; // <--- COLOCÁ ACÁ TU CLAVE DE SUPABASE
-    const MAX_CUPO_POR_CLASE = 15; 
+    const SUPABASE_KEY = 'sb_publishable_lLtAZND5SZ7td5kMZj6zwg_ELlmUnaG'; // <--- COLOCÁ AQUÍ TU CLAVE ANON DE SUPABASE
+    const MAX_CUPO_POR_CLASE = 15;
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let socioActual = null;
     let pagoActual = null;
+    let catalogoPlanes = [];
 
-    // Inicializar fechas
     const hoy = new Date();
     document.getElementById('reserva-fecha').valueAsDate = hoy;
-    document.getElementById('filtro-fecha-clase').valueAsDate = hoy;
-    actualizarTurnosDisponibles();
-
-    // Fecha por defecto de vencimiento (30 días desde hoy)
+    
     const enUnMes = new Date();
     enUnMes.setDate(enUnMes.getDate() + 30);
     document.getElementById('pago-vencimiento').valueAsDate = enUnMes;
 
+    actualizarTurnosDisponibles();
+
     // -------------------------------------------------------------
-    // LÓGICA DE HORARIOS SEGÚN EL DÍA ELEGIDO
+    // CONEXIÓN Y ESTADO DE API SUPABASE
+    // -------------------------------------------------------------
+    async function probarConexionSupabase() {
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      
+      dot.className = "w-3 h-3 rounded-full bg-yellow-500 animate-pulse";
+      text.textContent = "Probando conexión con Supabase...";
+
+      try {
+        const { data, error } = await _supabase.from('socios').select('id').limit(1);
+        if (error) throw error;
+
+        dot.className = "w-3 h-3 rounded-full bg-emerald-500";
+        text.textContent = "✅ Integración Correcta: Base de datos vinculada con éxito.";
+        cargarStatsAdmin();
+        cargarPlanesCatalogo();
+      } catch (err) {
+        dot.className = "w-3 h-3 rounded-full bg-red-600";
+        text.textContent = "❌ Error en Integración API: " + err.message;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // GESTIÓN DE PLANES (TABLA: planes)
+    // -------------------------------------------------------------
+    async function guardarNuevoPlan() {
+      const nombre_plan = document.getElementById('plan-nombre').value.trim();
+      const creditos = parseInt(document.getElementById('plan-creditos').value);
+      const precio = parseFloat(document.getElementById('plan-precio').value);
+      const msg = document.getElementById('msg-admin-plan');
+
+      if (!nombre_plan || isNaN(creditos) || isNaN(precio)) {
+        msg.textContent = "Completá nombre, créditos y precio.";
+        msg.className = "text-xs text-red-500";
+        return;
+      }
+
+      const { error } = await _supabase.from('planes').insert([{ nombre_plan, creditos, precio }]);
+      if (!error) {
+        msg.textContent = "✅ Plan agregado a la tabla 'planes'.";
+        msg.className = "text-xs text-emerald-400";
+        document.getElementById('plan-nombre').value = '';
+        document.getElementById('plan-creditos').value = '';
+        document.getElementById('plan-precio').value = '';
+        cargarPlanesCatalogo();
+      } else {
+        msg.textContent = "❌ Error: " + error.message;
+        msg.className = "text-xs text-red-500";
+      }
+    }
+
+    async function cargarPlanesCatalogo() {
+      const { data, error } = await _supabase.from('planes').select('*');
+      const select = document.getElementById('select-planes-admin');
+      if (error || !data || data.length === 0) {
+        select.innerHTML = '<option value="">No hay planes en la base de datos</option>';
+        catalogoPlanes = [];
+        return;
+      }
+      catalogoPlanes = data;
+      select.innerHTML = '<option value="">Seleccioná un plan...</option>' + 
+        data.map(p => `<option value="${p.id}">${p.nombre_plan} (${p.creditos} Créditos - $${p.precio})</option>`).join('');
+    }
+
+    function seleccionarPlanCatalogo() {
+      const idPlan = document.getElementById('select-planes-admin').value;
+      const planEncontrado = catalogoPlanes.find(p => p.id == idPlan);
+      if (planEncontrado) {
+        document.getElementById('pago-creditos').value = planEncontrado.creditos;
+        document.getElementById('pago-monto').value = planEncontrado.precio;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // HORARIOS Y REGLAS DE TURNOS
     // -------------------------------------------------------------
     function actualizarTurnosDisponibles() {
       const inputFecha = document.getElementById('reserva-fecha').value;
@@ -268,18 +366,18 @@
       const fechaObj = new Date(partes[0], partes[1] - 1, partes[2]);
       const diaSemana = fechaObj.getDay();
 
-      if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // Lunes, Miércoles, Viernes
+      if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // L, M, V
         selectTurno.innerHTML = `
-          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs - Tarde</option>
-          <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs - Noche</option>
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
+          <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs</option>
         `;
-      } else if (diaSemana === 2 || diaSemana === 4) { // Martes, Jueves
+      } else if (diaSemana === 2 || diaSemana === 4) { // M, J
         selectTurno.innerHTML = `
-          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs - Tarde</option>
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
         `;
-      } else { // Sábado o Domingo
+      } else {
         selectTurno.innerHTML = `<option value="">Cerrado</option>`;
-        msg.textContent = '❌ El gimnasio permanece cerrado los fines de semana.';
+        msg.textContent = '❌ El gimnasio no abre los fines de semana.';
         msg.className = 'text-xs text-center font-semibold text-amber-500';
         btnReservar.disabled = true;
       }
@@ -291,35 +389,25 @@
     async function buscarSocio() {
       const socioId = document.getElementById('socio-id').value.trim();
       const msg = document.getElementById('mensaje');
-      
       if (!socioId) return;
 
-      msg.textContent = 'Buscando socio...';
-
+      msg.textContent = 'Buscando en base de datos...';
       try {
-        const { data: socio, error: errSocio } = await _supabase
-          .from('socios')
-          .select('*')
-          .eq('id', socioId)
-          .maybeSingle();
-
-        if (errSocio || !socio) {
-          msg.textContent = 'Socio no encontrado. Solicitá tu registro en recepción.';
+        const { data: socio, error } = await _supabase.from('socios').select('*').eq('id', socioId).maybeSingle();
+        if (error || !socio) {
+          msg.textContent = 'Socio no encontrado. Registrate en recepción.';
           msg.className = 'text-sm font-semibold text-red-500';
           return;
         }
 
-        const { data: pagos } = await _supabase
-          .from('pagos_creditos')
-          .select('*')
-          .eq('socio_id', socioId);
+        const { data: pagos } = await _supabase.from('pagos_creditos').select('*').eq('socio_id', socioId);
 
         socioActual = socio;
         document.getElementById('socio-nombre').textContent = `${socio.nombre} ${socio.apellido}`;
 
         if (socio.fecha_nacimiento) {
           const nac = new Date(socio.fecha_nacimiento);
-          if (hoy.getMonth() === nac.getMonth() && hoy.getDate() === nac.getDate()) {
+          if (hoy.getMonth() === nac.getMonth() && hoy.getDate() === nac.getDate() + 1) {
             document.getElementById('socio-cumple-msg').classList.remove('hidden');
           }
         }
@@ -327,32 +415,31 @@
         const badgeEstado = document.getElementById('socio-estado-pago');
         if (pagos && pagos.length > 0) {
           pagoActual = pagos[0];
-          document.getElementById('socio-plan').textContent = pagoActual.plan;
+          document.getElementById('socio-plan').textContent = pagoActual.plan || "Plan Activo";
           document.getElementById('socio-creditos').textContent = pagoActual.creditos_disponibles;
           document.getElementById('socio-vencimiento').textContent = pagoActual.fecha_vencimiento;
 
           const hoyStr = new Date().toISOString().split('T')[0];
           if (pagoActual.fecha_vencimiento < hoyStr) {
-            badgeEstado.textContent = 'PLAN VENCIDO';
-            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-700';
+            badgeEstado.textContent = 'VENCIDO';
+            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-red-900/50 text-red-400';
           } else {
             badgeEstado.textContent = 'AL DÍA';
-            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-400 border border-emerald-700';
+            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-400';
           }
         } else {
           pagoActual = null;
           document.getElementById('socio-plan').textContent = 'Sin plan activo';
           document.getElementById('socio-creditos').textContent = '0';
           document.getElementById('socio-vencimiento').textContent = 'N/A';
-          badgeEstado.textContent = 'SIN PLAN';
+          badgeEstado.textContent = 'INACTIVO';
           badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400';
         }
 
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('socio-panel').classList.remove('hidden');
-
       } catch (err) {
-        msg.textContent = 'Error de conexión.';
+        msg.textContent = 'Error de comunicación con Supabase.';
       }
     }
 
@@ -364,40 +451,25 @@
 
       if (!turno) {
         msg.textContent = '⚠️ Seleccioná un turno válido.';
-        msg.className = 'text-xs text-center font-semibold text-amber-500';
         return;
       }
-
       if (!pagoActual || pagoActual.creditos_disponibles <= 0) {
         msg.textContent = '❌ No tenés créditos disponibles.';
-        msg.className = 'text-xs text-center font-semibold text-red-500';
         return;
       }
 
       btn.disabled = true;
-      msg.textContent = 'Verificando cupo...';
-
       try {
-        const { count } = await _supabase
-          .from('reservas')
-          .select('*', { count: 'exact', head: true })
-          .eq('fecha', fecha)
-          .eq('turno', turno);
-
+        const { count } = await _supabase.from('reservas').select('*', { count: 'exact', head: true }).eq('fecha', fecha).eq('turno', turno);
         if (count >= MAX_CUPO_POR_CLASE) {
-          msg.textContent = `⚠️ Turno lleno (${count}/${MAX_CUPO_POR_CLASE} alumnos). Elige otro turno.`;
-          msg.className = 'text-xs text-center font-semibold text-amber-500';
+          msg.textContent = `⚠️ Turno completo (${count}/${MAX_CUPO_POR_CLASE}).`;
           btn.disabled = false;
           return;
         }
 
-        const { error: errReserva } = await _supabase
-          .from('reservas')
-          .insert([{ socio_id: socioActual.id, fecha: fecha, turno: turno }]);
-
+        const { error: errReserva } = await _supabase.from('reservas').insert([{ socio_id: socioActual.id, fecha, turno, asistencia: false }]);
         if (errReserva) {
-          msg.textContent = errReserva.code === '23505' ? '⚠️ Ya tenés una reserva en este turno.' : '❌ Error al registrar reserva.';
-          msg.className = 'text-xs text-center font-semibold text-amber-500';
+          msg.textContent = '⚠️ Ya tenés reserva en este turno o error de BD.';
           btn.disabled = false;
           return;
         }
@@ -407,51 +479,43 @@
 
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
-
         msg.textContent = '✅ ¡Reserva realizada con éxito!';
         msg.className = 'text-xs text-center font-semibold text-emerald-400';
-
       } catch (err) {
-        msg.textContent = '❌ Error de conexión.';
+        msg.textContent = '❌ Error al procesar reserva.';
       } finally {
         btn.disabled = false;
       }
     }
 
     // -------------------------------------------------------------
-    // VISTA ADMINISTRADOR
+    // ADMINISTRADOR: FUNCIONES Y VISOR DE TABLAS
     // -------------------------------------------------------------
     function toggleModoAdmin() {
       const vSocio = document.getElementById('vista-socio');
       const vAdmin = document.getElementById('vista-admin');
+      const btnTexto = document.getElementById('texto-btn-vista');
 
       if (vAdmin.classList.contains('hidden')) {
         vSocio.classList.add('hidden');
         vAdmin.classList.remove('hidden');
+        btnTexto.textContent = "Volver a Vista Socio";
       } else {
         vAdmin.classList.add('hidden');
         vSocio.classList.remove('hidden');
+        btnTexto.textContent = "Modo Administrador";
       }
     }
 
     function verificarPinAdmin() {
       const pin = document.getElementById('admin-pin').value;
-      if (pin === 'admin123') { 
+      if (pin === 'admin123') {
         document.getElementById('admin-login-box').classList.add('hidden');
         document.getElementById('admin-dashboard').classList.remove('hidden');
-        cargarStatsAdmin();
+        probarConexionSupabase();
       } else {
         alert('Clave incorrecta.');
       }
-    }
-
-    function autoCompletarPlan() {
-      const plan = document.getElementById('pago-plan').value;
-      const inputCreditos = document.getElementById('pago-creditos');
-      if (plan === 'Pase 25 Créditos') inputCreditos.value = 25;
-      else if (plan === 'Pase 12 Créditos') inputCreditos.value = 12;
-      else if (plan === 'Pase 8 Créditos') inputCreditos.value = 8;
-      else if (plan === 'Pase Diario') inputCreditos.value = 1;
     }
 
     async function cargarStatsAdmin() {
@@ -459,134 +523,116 @@
       document.getElementById('stat-total-socios').textContent = socios ? socios.length : 0;
 
       const hoyStr = new Date().toISOString().split('T')[0];
-      const { data: pagos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
-      document.getElementById('stat-vencidos').textContent = pagos ? pagos.length : 0;
+      const { data: vencidos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
+      document.getElementById('stat-vencidos').textContent = vencidos ? vencidos.length : 0;
 
-      if (socios) {
-        const cumples = socios.filter(s => {
-          if (!s.fecha_nacimiento) return false;
-          const nac = new Date(s.fecha_nacimiento);
-          return nac.getMonth() === hoy.getMonth() && nac.getDate() === hoy.getDate();
-        });
-
-        if (cumples.length > 0) {
-          document.getElementById('stat-cumples').textContent = cumples.map(c => `${c.nombre} ${c.apellido}`).join(', ');
-        }
-      }
+      const { data: activos } = await _supabase.from('pagos_creditos').select('*').gte('fecha_vencimiento', hoyStr);
+      document.getElementById('stat-planes-activos').textContent = activos ? activos.length : 0;
     }
 
     async function guardarSocio() {
       const id = document.getElementById('nuevo-id').value.trim();
       const nombre = document.getElementById('nuevo-nombre').value.trim();
       const apellido = document.getElementById('nuevo-apellido').value.trim();
-      const nacimiento = document.getElementById('nuevo-nacimiento').value;
+      const telefono = document.getElementById('nuevo-telefono').value.trim();
+      const fecha_nacimiento = document.getElementById('nuevo-nacimiento').value || null;
       const msg = document.getElementById('msg-admin-socio');
 
       if (!id || !nombre || !apellido) {
-        msg.textContent = 'Completá DNI, Nombre y Apellido.';
+        msg.textContent = 'DNI, Nombre y Apellido obligatorios.';
         msg.className = 'text-xs text-red-500';
         return;
       }
 
-      const { error } = await _supabase.from('socios').upsert([{ id, nombre, apellido, fecha_nacimiento: nacimiento }]);
+      const { error } = await _supabase.from('socios').upsert([{ 
+        id, nombre, apellido, telefono, fecha_nacimiento, estado: 'ACTIVO' 
+      }]);
 
       if (!error) {
-        msg.textContent = '✅ Socio registrado correctamente.';
+        msg.textContent = '✅ Socio guardado en la tabla.';
         msg.className = 'text-xs text-emerald-400';
-        document.getElementById('pago-socio-id').value = id; 
+        document.getElementById('pago-socio-id').value = id;
         cargarStatsAdmin();
       } else {
-        msg.textContent = '❌ Error al guardar socio.';
+        msg.textContent = '❌ Error: ' + error.message;
         msg.className = 'text-xs text-red-500';
       }
     }
 
     async function registrarPago() {
       const socio_id = document.getElementById('pago-socio-id').value.trim();
-      const plan = document.getElementById('pago-plan').value;
+      const idPlanSelect = document.getElementById('select-planes-admin').value;
+      const planObj = catalogoPlanes.find(p => p.id == idPlanSelect);
+      const nombrePlan = planObj ? planObj.nombre_plan : 'Personalizado';
+
       const creditos = parseInt(document.getElementById('pago-creditos').value);
       const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
-      const vencimiento = document.getElementById('pago-vencimiento').value;
+      const fecha_vencimiento = document.getElementById('pago-vencimiento').value;
       const msg = document.getElementById('msg-admin-pago');
 
-      if (!socio_id || !vencimiento) {
-        msg.textContent = '⚠️ Ingresá DNI del socio y fecha de vencimiento.';
-        msg.className = 'text-xs text-amber-500';
+      if (!socio_id || !fecha_vencimiento || isNaN(creditos)) {
+        msg.textContent = 'Ingresá DNI, créditos y vencimiento.';
+        msg.className = 'text-xs text-red-500';
         return;
       }
 
-      msg.textContent = 'Procesando...';
+      const hoyStr = new Date().toISOString().split('T')[0];
 
-      // 1. Verificar si el socio existe antes de cargar el pago
-      const { data: socioExistente } = await _supabase
-        .from('socios')
-        .select('id')
-        .eq('id', socio_id)
-        .maybeSingle();
-
-      if (!socioExistente) {
-        msg.textContent = `⚠️ El socio con DNI ${socio_id} no está registrado. Cargalo primero en la Sección 1.`;
-        msg.className = 'text-xs text-amber-500';
-        return;
-      }
-
-      // 2. Registrar/Actualizar el pago
-      const { error } = await _supabase.from('pagos_creditos').upsert([
-        { 
-          socio_id: socio_id, 
-          plan: plan, 
-          creditos_disponibles: creditos, 
-          monto: monto,
-          fecha_vencimiento: vencimiento 
-        }
-      ], { onConflict: 'socio_id' });
+      const { error } = await _supabase.from('pagos_creditos').upsert([{
+        socio_id, 
+        plan: nombrePlan, 
+        fecha_pago: hoyStr,
+        fecha_vencimiento,
+        creditos_totales: creditos,
+        creditos_disponibles: creditos, 
+        Monto: monto
+      }], { onConflict: 'socio_id' });
 
       if (!error) {
-        msg.textContent = '✅ Créditos y plan cargados con éxito.';
+        msg.textContent = '✅ Pago cargado a la tabla pagos_creditos.';
         msg.className = 'text-xs text-emerald-400';
         cargarStatsAdmin();
       } else {
-        msg.textContent = '❌ Error de guardado: ' + error.message;
+        msg.textContent = '❌ Error: ' + error.message;
         msg.className = 'text-xs text-red-500';
       }
     }
 
-    async function cargarAsistencia() {
-      const fecha = document.getElementById('filtro-fecha-clase').value;
-      const contenedor = document.getElementById('lista-asistencia');
-      contenedor.innerHTML = 'Buscando reservas...';
+    // VISOR UNIVERSAL DE CUALQUIER TABLA SUPABASE
+    async function verTablaAdmin(nombreTabla) {
+      const contenedor = document.getElementById('tabla-resultado-admin');
+      contenedor.innerHTML = '<p class="text-zinc-400 animate-pulse">Consultando ' + nombreTabla + '...</p>';
 
-      const { data: reservas } = await _supabase
-        .from('reservas')
-        .select('*, socios(nombre, apellido)')
-        .eq('fecha', fecha);
+      const { data, error } = await _supabase.from(nombreTabla).select('*');
 
-      if (!reservas || reservas.length === 0) {
-        contenedor.innerHTML = '<p class="text-xs text-zinc-500 italic">No hay alumnos inscriptos para esta fecha.</p>';
+      if (error) {
+        contenedor.innerHTML = `<p class="text-red-500 font-semibold">❌ Error al cargar tabla: ${error.message}</p>`;
         return;
       }
 
-      const turnos = {};
-      reservas.forEach(r => {
-        if (!turnos[r.turno]) turnos[r.turno] = [];
-        turnos[r.turno].push(`${r.socios?.nombre || ''} ${r.socios?.apellido || ''} (DNI: ${r.socio_id})`);
-      });
-
-      contenedor.innerHTML = '';
-      for (const [turno, alumnos] of Object.entries(turnos)) {
-        const div = document.createElement('div');
-        div.className = 'bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50';
-        div.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-bold text-xs text-amber-400">${turno}</span>
-            <span class="text-xs text-zinc-400 font-mono">${alumnos.length} / ${MAX_CUPO_POR_CLASE} alumnos</span>
-          </div>
-          <ul class="list-disc list-inside text-xs text-zinc-300 space-y-1">
-            ${alumnos.map(a => `<li>${a}</li>`).join('')}
-          </ul>
-        `;
-        contenedor.appendChild(div);
+      if (!data || data.length === 0) {
+        contenedor.innerHTML = `<p class="text-zinc-500 italic">La tabla '${nombreTabla}' está totalmente vacía.</p>`;
+        return;
       }
+
+      let html = `<table class="w-full text-left border-collapse border border-zinc-800">
+        <tr class="bg-zinc-800 text-zinc-200">`;
+      
+      const keys = Object.keys(data[0]);
+      keys.forEach(k => html += `<th class="p-2 border border-zinc-700 uppercase text-[10px] tracking-wider">${k}</th>`);
+      html += `</tr>`;
+
+      data.forEach(row => {
+        html += `<tr class="border border-zinc-800 hover:bg-zinc-800/50">`;
+        keys.forEach(k => {
+          let val = row[k];
+          if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
+          html += `<td class="p-2 border border-zinc-800 font-mono text-[11px]">${val !== null ? val : '<span class="text-zinc-600">NULL</span>'}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</table>`;
+      contenedor.innerHTML = html;
     }
   </script>
 </body>
