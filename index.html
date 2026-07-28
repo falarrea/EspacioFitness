@@ -607,14 +607,15 @@
         .maybeSingle();
 
       let error;
-      const datosPago = {
+     const datosPago = {
         socio_id,
         plan: nombrePlan,
         fecha_pago: hoyStr,
         fecha_vencimiento,
         creditos_totales: creditos,
         creditos_disponibles: creditos,
-        Monto: monto
+        Monto: monto,
+        metodo_pago: formaPago  // <--- Agregá esta línea
       };
 
       if (existePago) {
