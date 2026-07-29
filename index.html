@@ -1,22 +1,88 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Espacio Fitness - Control Integral</title>
+  <title>Espacio Fitness - App Oficial</title>
+  
+  <!-- Tipografía Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Supabase -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col items-center p-4 sm:p-6 font-sans">
 
-  <!-- HEADER -->
-  <header class="w-full max-w-5xl flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-    <div>
-      <h1 class="text-2xl font-black text-red-600 tracking-wider">ESPACIO FITNESS</h1>
-      <p class="text-xs text-zinc-400">Sistema Integral de Gestión & Reservas</p>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #09090b;
+    }
+    .glass-card {
+      background: rgba(24, 24, 27, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(63, 63, 70, 0.4);
+    }
+    .glow-accent {
+      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+    }
+    /* Fade animation */
+    .fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  </style>
+</head>
+<body class="text-zinc-100 min-h-screen flex flex-col items-center p-3 sm:p-6 antialiased selection:bg-brand-500 selection:text-black">
+
+  <!-- HEADER / LOGO PRINCIPAL -->
+  <header class="w-full max-w-5xl flex justify-between items-center mb-8 pt-2 border-b border-zinc-800/80 pb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-teal-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-brand-500/20">
+        EF
+      </div>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center gap-1.5">
+          <span class="text-zinc-300 font-light tracking-widest text-xs sm:text-sm uppercase block">ESPACIO</span>
+          <span class="bg-gradient-to-r from-brand-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent font-black">FITNESS</span>
+        </h1>
+        <p class="text-[10px] sm:text-xs text-zinc-500 font-medium">Entrenamiento & Alto Rendimiento</p>
+      </div>
     </div>
-    <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-2 rounded-lg font-semibold border border-zinc-700 transition flex items-center gap-2">
-      🔒 <span id="texto-btn-vista">Modo Administrador</span>
+
+    <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="glass-card hover:bg-zinc-800/80 text-zinc-300 text-xs px-3.5 py-2 rounded-xl font-semibold border border-zinc-700/60 transition-all duration-200 flex items-center gap-2 active:scale-95">
+      <span>🔒</span> <span id="texto-btn-vista" class="hidden sm:inline">Panel Administrador</span>
     </button>
   </header>
 
@@ -24,132 +90,161 @@
   <main class="w-full max-w-5xl">
 
     <!-- ========================================== -->
-    <!-- 1. VISTA SOCIO (RESERVAS & PORTAL)         -->
+    <!-- 1. VISTA SOCIO (PORTAL Y RESERVAS)        -->
     <!-- ========================================== -->
-    <section id="vista-socio" class="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+    <section id="vista-socio" class="max-w-md mx-auto fade-in">
       
-      <!-- INGRESO DNI -->
-      <div id="login-section" class="space-y-4 text-center">
-        <h2 class="text-xl font-bold">Portal del Socio</h2>
-        <p class="text-xs text-zinc-400">Ingresá tu DNI para acceder a tus turnos</p>
+      <!-- INGRESO CON DNI -->
+      <div id="login-section" class="glass-card rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center border border-zinc-800/80 relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
         
-        <input type="text" id="socio-id" placeholder="Inserte DNI o Código Socio" 
-               class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition text-center font-mono">
+        <div class="space-y-2">
+          <span class="inline-block px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 text-[11px] font-bold tracking-wider uppercase border border-brand-500/20">Portal de Miembros</span>
+          <h2 class="text-2xl font-extrabold text-white tracking-tight">Bienvenido a Espacio Fitness</h2>
+          <p class="text-xs text-zinc-400 leading-relaxed">Ingresá tu número de DNI para gestionar tus clases y visualizar tu plan activo.</p>
+        </div>
         
-        <button onclick="buscarSocio()" 
-                class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 rounded-xl transition shadow-lg shadow-red-900/40">
-          Ingresar
-        </button>
-        <p id="mensaje" class="text-sm font-semibold text-zinc-400"></p>
+        <div class="space-y-3">
+          <div class="relative">
+            <input type="text" id="socio-id" placeholder="Ej: 94462725" 
+                   class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition text-center font-mono text-lg font-bold">
+          </div>
+          
+          <button onclick="buscarSocio()" 
+                  class="w-full bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-400 hover:to-emerald-500 text-black font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/25 active:scale-[0.98]">
+            Ingresar a la App
+          </button>
+        </div>
+
+        <p id="mensaje" class="text-xs font-semibold text-zinc-400 min-h-[1rem]"></p>
       </div>
 
       <!-- PANEL SOCIO LOGUEADO -->
-      <div id="socio-panel" class="hidden text-left space-y-4">
-        <div class="flex justify-between items-start border-b border-zinc-800 pb-3">
-          <div>
-            <h2 id="socio-nombre" class="text-xl font-bold text-white"></h2>
-            <p id="socio-cumple-msg" class="text-xs text-amber-400 font-semibold hidden">🎉 ¡Feliz Cumpleaños te desea Espacio Fitness!</p>
+      <div id="socio-panel" class="hidden space-y-5 fade-in">
+        
+        <!-- BIENVENIDA Y SALUDO -->
+        <div class="glass-card p-5 rounded-3xl flex justify-between items-center border border-zinc-800/80">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-brand-400 font-bold text-lg">
+              👤
+            </div>
+            <div>
+              <p class="text-[11px] text-zinc-400 uppercase tracking-wider font-semibold">Bienvenido/a</p>
+              <h2 id="socio-nombre" class="text-lg font-extrabold text-white"></h2>
+              <p id="socio-cumple-msg" class="text-xs text-amber-300 font-bold hidden animate-bounce mt-0.5">🎉 ¡Feliz Cumpleaños de parte del equipo!</p>
+            </div>
           </div>
-          <button onclick="location.reload()" class="text-xs bg-zinc-800 text-zinc-400 px-2 py-1 rounded hover:text-white">Salir</button>
+          <button onclick="location.reload()" class="text-xs bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl transition border border-zinc-700/60 font-semibold">Salir</button>
         </div>
 
-        <!-- TARJETA DE PLAN -->
-        <div class="bg-zinc-800/60 p-4 rounded-xl border border-zinc-700/50">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs text-zinc-400">Plan Actual</span>
-            <span id="socio-estado-pago" class="text-xs font-bold px-2 py-0.5 rounded"></span>
+        <!-- TARJETA DE PLAN Y CRÉDITOS -->
+        <div class="glass-card p-6 rounded-3xl border border-zinc-800/80 relative overflow-hidden glow-accent">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs text-zinc-400 font-medium">Estado de Membresía</span>
+            <span id="socio-estado-pago" class="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full"></span>
           </div>
-          <p id="socio-plan" class="font-bold text-red-500 text-lg">-</p>
+          <p id="socio-plan" class="font-extrabold text-brand-400 text-xl tracking-tight">-</p>
           
-          <div class="flex justify-between items-center mt-3 pt-3 border-t border-zinc-700/40">
+          <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-800/80">
             <div>
-              <p class="text-xs text-zinc-400">Créditos Disponibles</p>
-              <p id="socio-creditos" class="text-3xl font-black text-white">-</p>
+              <p class="text-[11px] text-zinc-400 font-medium">Créditos Disponibles</p>
+              <p id="socio-creditos" class="text-3xl font-black text-white mt-0.5">-</p>
             </div>
             <div class="text-right">
-              <p class="text-xs text-zinc-400">Vencimiento</p>
-              <p id="socio-vencimiento" class="text-sm font-semibold text-zinc-300">-</p>
+              <p class="text-[11px] text-zinc-400 font-medium">Fecha Vencimiento</p>
+              <p id="socio-vencimiento" class="text-sm font-bold text-zinc-200 mt-1.5 font-mono">-</p>
             </div>
           </div>
         </div>
 
-        <!-- RESERVAS -->
-        <div class="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800 space-y-3">
-          <h3 class="text-sm font-bold text-zinc-300 uppercase tracking-wider">Reservar Clase</h3>
+        <!-- RESERVAS CON SELECTOR DE DÍAS (TABS SEMANALES) -->
+        <div class="glass-card p-5 rounded-3xl border border-zinc-800/80 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+              <span>📅</span> Reservar Tu Clase
+            </h3>
+            <span class="text-[10px] text-zinc-500 font-semibold">Máximo 15 cupos/turno</span>
+          </div>
           
+          <!-- SELECTOR DE DÍAS (PESTAÑA MÓVIL) -->
           <div>
-            <label class="text-xs text-zinc-400 block mb-1">Fecha</label>
-            <input type="date" id="reserva-fecha" onchange="actualizarTurnosDisponibles()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
+            <label class="text-[11px] text-zinc-400 font-medium block mb-2">Seleccioná un día de la semana:</label>
+            <div id="selector-dias-container" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <!-- Se genera dinámicamente con JS -->
+            </div>
+            <input type="hidden" id="reserva-fecha">
           </div>
 
+          <!-- TURNOS DISPONIBLES -->
           <div>
-            <label class="text-xs text-zinc-400 block mb-1">Turno Disponible</label>
-            <select id="reserva-turno" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-600">
+            <label class="text-[11px] text-zinc-400 font-medium block mb-1.5">Horario Disponible:</label>
+            <select id="reserva-turno" class="w-full bg-zinc-900 border border-zinc-700/80 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 font-semibold">
             </select>
           </div>
 
-          <button onclick="confirmarReserva()" id="btn-reservar" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-900/30">
+          <button onclick="confirmarReserva()" id="btn-reservar" class="w-full bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-400 hover:to-emerald-500 text-black font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/20 active:scale-[0.98]">
             Confirmar Reserva
           </button>
-          <p id="reserva-mensaje" class="text-xs text-center font-semibold mt-1"></p>
+          <p id="reserva-mensaje" class="text-xs text-center font-semibold mt-1 min-h-[1.25rem]"></p>
         </div>
+
       </div>
     </section>
 
     <!-- ========================================== -->
     <!-- 2. VISTA ADMINISTRADOR (PANEL DE CONTROL)  -->
     <!-- ========================================== -->
-    <section id="vista-admin" class="hidden space-y-6">
+    <section id="vista-admin" class="hidden space-y-6 fade-in">
 
       <!-- LOGIN ADMIN -->
-      <div id="admin-login-box" class="max-w-xs mx-auto bg-zinc-900 p-6 rounded-xl border border-zinc-800 text-center space-y-4">
-        <h2 class="font-bold text-lg">Acceso Administrador</h2>
-        <input type="password" id="admin-pin" placeholder="Clave (admin123)" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-center text-white focus:outline-none focus:border-red-600">
-        <button onclick="verificarPinAdmin()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg">Entrar</button>
+      <div id="admin-login-box" class="max-w-xs mx-auto glass-card p-6 rounded-3xl text-center space-y-4 border border-zinc-800">
+        <h2 class="font-extrabold text-lg text-white">Acceso Administrador</h2>
+        <input type="password" id="admin-pin" placeholder="Clave de acceso" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-2.5 text-center text-white focus:outline-none focus:border-brand-500 font-mono">
+        <button onclick="verificarPinAdmin()" class="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-2.5 rounded-2xl transition">Ingresar</button>
       </div>
 
       <!-- DASHBOARD ADMIN -->
       <div id="admin-dashboard" class="hidden space-y-6">
 
-        <!-- CARD ESTADO DE API SUPABASE -->
-        <div id="api-status-card" class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+        <!-- STATUS API SUPABASE -->
+        <div id="api-status-card" class="glass-card p-4 rounded-2xl flex items-center justify-between border border-zinc-800">
           <div class="flex items-center gap-3">
             <span id="status-dot" class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span>
             <div>
-              <p class="text-sm font-bold text-white">Integración con Supabase API</p>
-              <p id="status-text" class="text-xs text-zinc-400">Verificando conexión en tiempo real...</p>
+              <p class="text-xs font-bold text-white">Estado de la Base de Datos (Supabase)</p>
+              <p id="status-text" class="text-[11px] text-zinc-400">Verificando conexión en tiempo real...</p>
             </div>
           </div>
-          <button onclick="probarConexionSupabase()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded border border-zinc-700">Comprobar API</button>
+          <button onclick="probarConexionSupabase()" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700/60">Comprobar</button>
         </div>
 
         <!-- RESUMEN / METRICAS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Total Socios</p>
-            <p id="stat-total-socios" class="text-2xl font-black text-white">-</p>
+          <div class="glass-card p-4 rounded-2xl border border-zinc-800">
+            <p class="text-xs text-zinc-400 font-medium">Total Socios</p>
+            <p id="stat-total-socios" class="text-2xl font-black text-white mt-1">-</p>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Planes Vencidos</p>
-            <p id="stat-vencidos" class="text-2xl font-black text-red-500">-</p>
+          <div class="glass-card p-4 rounded-2xl border border-zinc-800">
+            <p class="text-xs text-zinc-400 font-medium">Planes Vencidos</p>
+            <p id="stat-vencidos" class="text-2xl font-black text-rose-500 mt-1">-</p>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">Planes Activos</p>
-            <p id="stat-planes-activos" class="text-2xl font-black text-emerald-500">-</p>
+          <div class="glass-card p-4 rounded-2xl border border-zinc-800">
+            <p class="text-xs text-zinc-400 font-medium">Planes Activos</p>
+            <p id="stat-planes-activos" class="text-2xl font-black text-brand-400 mt-1">-</p>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <p class="text-xs text-zinc-400">🎂 Cumpleaños Hoy</p>
-            <div id="stat-cumples" class="text-xs font-semibold text-amber-400 mt-1">Ninguno hoy</div>
+          <div class="glass-card p-4 rounded-2xl border border-zinc-800">
+            <p class="text-xs text-zinc-400 font-medium">🎂 Cumpleaños Hoy</p>
+            <div id="stat-cumples" class="text-xs font-bold text-amber-300 mt-1">Ninguno hoy</div>
           </div>
         </div>
 
         <!-- APARTADO DE PRÓXIMOS VENCIMIENTOS (3 a 5 DÍAS) -->
-        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-3">
-          <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-            <h3 class="font-bold text-sm text-amber-400 flex items-center gap-2">
-              ⏰ Próximos Vencimientos (En los próximos 3 a 5 días)
+        <div class="glass-card p-5 rounded-3xl border border-zinc-800/80 space-y-3">
+          <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+            <h3 class="font-extrabold text-xs text-amber-400 flex items-center gap-2 uppercase tracking-wider">
+              <span>⏰</span> Próximos Vencimientos (3 a 5 Días)
             </h3>
-            <span id="cant-proximos-venc" class="text-xs bg-amber-900/40 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded font-bold">0</span>
+            <span id="cant-proximos-venc" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full font-bold">0</span>
           </div>
           <div id="lista-proximos-vencimientos" class="space-y-2 max-h-48 overflow-y-auto text-xs">
             <p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>
@@ -157,40 +252,40 @@
         </div>
 
         <!-- FORMULARIOS DE GESTIÓN -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
           <!-- 1. CREAR PLAN EN CATÁLOGO -->
-          <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-amber-500 text-sm">1. Crear Plan / Oferta</h3>
+          <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-amber-400 text-xs uppercase tracking-wider">1. Crear Plan / Oferta</h3>
             <div>
-              <label class="text-xs text-zinc-400">Nombre del Plan</label>
-              <input type="text" id="plan-nombre" placeholder="Ej: Pase Libre / 12 Clases" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              <label class="text-[11px] text-zinc-400">Nombre del Plan</label>
+              <input type="text" id="plan-nombre" placeholder="Ej: Pase Libre / 12 Clases" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Créditos</label>
-                <input type="number" id="plan-creditos" placeholder="12" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Créditos</label>
+                <input type="number" id="plan-creditos" placeholder="12" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Precio ($)</label>
-                <input type="number" id="plan-precio" placeholder="20000" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Precio ($)</label>
+                <input type="number" id="plan-precio" placeholder="20000" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
-            <button onclick="guardarNuevoPlan()" class="w-full bg-amber-600 hover:bg-amber-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar en Tabla 'planes'</button>
-            <p id="msg-admin-plan" class="text-xs text-center font-semibold"></p>
+            <button onclick="guardarNuevoPlan()" class="w-full bg-amber-500 hover:bg-amber-400 font-extrabold py-2.5 rounded-xl text-xs text-black transition">Guardar en Catálogo</button>
+            <p id="msg-admin-plan" class="text-xs text-center font-semibold min-h-[1rem]"></p>
           </div>
 
           <!-- 2. REGISTRAR O EDITAR SOCIO -->
-          <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-red-500 text-sm">2. Registrar Socio</h3>
+          <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-brand-400 text-xs uppercase tracking-wider">2. Registrar Socio</h3>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">DNI / ID</label>
-                <input type="text" id="nuevo-id" placeholder="DNI" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-mono">
+                <label class="text-[11px] text-zinc-400">DNI / ID</label>
+                <input type="text" id="nuevo-id" placeholder="DNI" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white font-mono">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Estado Socio</label>
-                <select id="nuevo-estado" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-semibold">
+                <label class="text-[11px] text-zinc-400">Estado Socio</label>
+                <select id="nuevo-estado" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white font-semibold">
                   <option value="ACTIVO" class="text-emerald-400">🟢 ACTIVO</option>
                   <option value="INACTIVO" class="text-red-400">🔴 INACTIVO</option>
                   <option value="SUSPENDIDO" class="text-amber-400">🟡 SUSPENDIDO</option>
@@ -199,83 +294,83 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Nombre</label>
-                <input type="text" id="nuevo-nombre" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Nombre</label>
+                <input type="text" id="nuevo-nombre" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Apellido</label>
-                <input type="text" id="nuevo-apellido" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Apellido</label>
+                <input type="text" id="nuevo-apellido" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Teléfono</label>
-                <input type="text" id="nuevo-telefono" placeholder="Ej: 381..." class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Teléfono</label>
+                <input type="text" id="nuevo-telefono" placeholder="Ej: 381..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Fecha Nacimiento</label>
-                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Fecha Nacimiento</label>
+                <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
-            <button onclick="guardarSocio()" class="w-full bg-red-600 hover:bg-red-700 font-bold py-2 rounded-lg text-xs text-white transition">Guardar / Actualizar Socio</button>
-            <p id="msg-admin-socio" class="text-xs text-center font-semibold"></p>
+            <button onclick="guardarSocio()" class="w-full bg-brand-500 hover:bg-brand-400 font-extrabold py-2.5 rounded-xl text-xs text-black transition">Guardar Socio</button>
+            <p id="msg-admin-socio" class="text-xs text-center font-semibold min-h-[1rem]"></p>
           </div>
 
           <!-- 3. ASIGNAR PAGO Y CRÉDITOS -->
-          <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-500 text-sm">3. Cargar Pago / Plan a Socio</h3>
+          <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-400 text-xs uppercase tracking-wider">3. Cargar Pago / Plan</h3>
             <div>
-              <label class="text-xs text-zinc-400">DNI del Socio</label>
-              <input type="text" id="pago-socio-id" placeholder="DNI exacto" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white font-mono">
+              <label class="text-[11px] text-zinc-400">DNI del Socio</label>
+              <input type="text" id="pago-socio-id" placeholder="DNI exacto" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white font-mono">
             </div>
             <div>
-              <label class="text-xs text-zinc-400">Seleccionar Plan (de la Tabla Planes)</label>
-              <select id="select-planes-admin" onchange="seleccionarPlanCatalogo()" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+              <label class="text-[11px] text-zinc-400">Seleccionar Plan</label>
+              <select id="select-planes-admin" onchange="seleccionarPlanCatalogo()" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
                 <option value="">Cargando planes...</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Método de Pago</label>
-                <select id="pago-metodo" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Método de Pago</label>
+                <select id="pago-metodo" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
                   <option value="Efectivo">💵 Efectivo</option>
                   <option value="Transferencia">🏦 Transferencia</option>
                 </select>
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Monto Abonado ($)</label>
-                <input type="number" id="pago-monto" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Monto Abonado ($)</label>
+                <input type="number" id="pago-monto" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="text-xs text-zinc-400">Créditos Totales</label>
-                <input type="number" id="pago-creditos" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Créditos Totales</label>
+                <input type="number" id="pago-creditos" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
               <div>
-                <label class="text-xs text-zinc-400">Vencimiento</label>
-                <input type="date" id="pago-vencimiento" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white">
+                <label class="text-[11px] text-zinc-400">Vencimiento</label>
+                <input type="date" id="pago-vencimiento" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
-            <button onclick="registrarPago()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-xs text-white transition">Registrar Pago</button>
-            <p id="msg-admin-pago" class="text-xs text-center font-semibold"></p>
+            <button onclick="registrarPago()" class="w-full bg-emerald-500 hover:bg-emerald-400 font-extrabold py-2.5 rounded-xl text-xs text-black transition">Registrar Pago</button>
+            <p id="msg-admin-pago" class="text-xs text-center font-semibold min-h-[1rem]"></p>
           </div>
 
         </div>
 
-        <!-- VISOR DE TABLAS EN TIEMPO REAL -->
-        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
+        <!-- VISOR DE TABLAS -->
+        <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
           <div class="flex flex-wrap justify-between items-center border-b border-zinc-800 pb-3 gap-2">
-            <h3 class="font-bold text-sm text-zinc-300">🔎 Visor Directo de Tablas Supabase</h3>
+            <h3 class="font-bold text-xs text-zinc-300 uppercase tracking-wider">🔎 Visor Directo de Tablas</h3>
             <div class="flex flex-wrap gap-2">
-              <button onclick="verTablaAdmin('planes')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">🏷️ Planes</button>
-              <button onclick="verTablaAdmin('socios')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">👥 Socios</button>
-              <button onclick="verTablaAdmin('pagos_creditos')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">💳 Pagos</button>
-              <button onclick="verTablaAdmin('reservas')" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-semibold border border-zinc-700">📅 Reservas</button>
+              <button onclick="verTablaAdmin('planes')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">🏷️ Planes</button>
+              <button onclick="verTablaAdmin('socios')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">👥 Socios</button>
+              <button onclick="verTablaAdmin('pagos_creditos')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">💳 Pagos</button>
+              <button onclick="verTablaAdmin('reservas')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">📅 Reservas</button>
             </div>
           </div>
           <div id="tabla-resultado-admin" class="overflow-x-auto max-h-72 text-xs text-zinc-300">
-            <p class="text-zinc-500 italic text-center py-4">Haz clic en cualquiera de los botones para ver el contenido de la tabla.</p>
+            <p class="text-zinc-500 italic text-center py-4">Haz clic en cualquiera de los botones para consultar datos.</p>
           </div>
         </div>
 
@@ -295,17 +390,17 @@
     let pagoActual = null;
     let catalogoPlanes = [];
 
+    // Inicializar fechas por defecto
     const hoy = new Date();
-    document.getElementById('reserva-fecha').valueAsDate = hoy;
-    
     const enUnMes = new Date();
     enUnMes.setDate(enUnMes.getDate() + 30);
     document.getElementById('pago-vencimiento').valueAsDate = enUnMes;
 
-    actualizarTurnosDisponibles();
+    // Generar Selector de Días de la semana para reservas
+    generarPillsDias();
 
     // -------------------------------------------------------------
-    // FUNCIONES DE FORMATO DE FECHA (DD/MM/AAAA) Y CUMPLEAÑOS
+    // FUNCIONES DE FECHAS & TABS
     // -------------------------------------------------------------
     function formatFecha(fechaStr) {
       if (!fechaStr) return '-';
@@ -316,92 +411,65 @@
 
     function esCumpleaniosHoy(fechaNacStr) {
       if (!fechaNacStr) return false;
-      const partes = fechaNacStr.split('T')[0].split('-'); // ["1998", "07", "28"]
+      const partes = fechaNacStr.split('T')[0].split('-');
       if (partes.length < 3) return false;
 
       const diaNac = parseInt(partes[2], 10);
       const mesNac = parseInt(partes[1], 10);
 
       const hoyObj = new Date();
-      const diaHoy = hoyObj.getDate();
-      const mesHoy = hoyObj.getMonth() + 1;
-
-      return diaNac === diaHoy && mesNac === mesHoy;
+      return diaNac === hoyObj.getDate() && mesNac === (hoyObj.getMonth() + 1);
     }
 
-    // -------------------------------------------------------------
-    // CONEXIÓN Y ESTADO DE API SUPABASE
-    // -------------------------------------------------------------
-    async function probarConexionSupabase() {
-      const dot = document.getElementById('status-dot');
-      const text = document.getElementById('status-text');
+    // Genera 7 botones de días rápidamente (Tabs semanales)
+    function generarPillsDias() {
+      const container = document.getElementById('selector-dias-container');
+      container.innerHTML = '';
+
+      const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const hoyObj = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(hoyObj.getDate() + i);
+
+        const fechaIso = d.toISOString().split('T')[0];
+        const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
+        const diaNum = String(d.getDate()).padStart(2, '0');
+        const mesNum = String(d.getMonth() + 1).padStart(2, '0');
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.fecha = fechaIso;
+        btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
+          i === 0 
+            ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
+            : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
+        }`;
+        
+        btn.innerHTML = `
+          <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
+          <span class="block text-xs font-mono font-bold">${diaNum}/${mesNum}</span>
+        `;
+
+        btn.onclick = () => seleccionarDiaTab(btn, fechaIso);
+        container.appendChild(btn);
+
+        if (i === 0) {
+          document.getElementById('reserva-fecha').value = fechaIso;
+          actualizarTurnosDisponibles();
+        }
+      }
+    }
+
+    function seleccionarDiaTab(btnElement, fechaIso) {
+      document.querySelectorAll('.pill-dia').forEach(b => {
+        b.className = 'pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold';
+      });
+      btnElement.className = 'pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20';
       
-      dot.className = "w-3 h-3 rounded-full bg-yellow-500 animate-pulse";
-      text.textContent = "Probando conexión con Supabase...";
-
-      try {
-        const { data, error } = await _supabase.from('socios').select('id').limit(1);
-        if (error) throw error;
-
-        dot.className = "w-3 h-3 rounded-full bg-emerald-500";
-        text.textContent = "✅ Integración Correcta: Base de datos vinculada con éxito.";
-        cargarStatsAdmin();
-        cargarPlanesCatalogo();
-      } catch (err) {
-        dot.className = "w-3 h-3 rounded-full bg-red-600";
-        text.textContent = "❌ Error en Integración API: " + err.message;
-      }
-    }
-
-    // -------------------------------------------------------------
-    // GESTIÓN DE PLANES (TABLA: planes)
-    // -------------------------------------------------------------
-    async function guardarNuevoPlan() {
-      const nombre_plan = document.getElementById('plan-nombre').value.trim();
-      const creditos = parseInt(document.getElementById('plan-creditos').value);
-      const precio = parseFloat(document.getElementById('plan-precio').value);
-      const msg = document.getElementById('msg-admin-plan');
-
-      if (!nombre_plan || isNaN(creditos) || isNaN(precio)) {
-        msg.textContent = "Completá nombre, créditos y precio.";
-        msg.className = "text-xs text-red-500";
-        return;
-      }
-
-      const { error } = await _supabase.from('planes').insert([{ nombre_plan, creditos, precio }]);
-      if (!error) {
-        msg.textContent = "✅ Plan agregado a la tabla 'planes'.";
-        msg.className = "text-xs text-emerald-400";
-        document.getElementById('plan-nombre').value = '';
-        document.getElementById('plan-creditos').value = '';
-        document.getElementById('plan-precio').value = '';
-        cargarPlanesCatalogo();
-      } else {
-        msg.textContent = "❌ Error: " + error.message;
-        msg.className = "text-xs text-red-500";
-      }
-    }
-
-    async function cargarPlanesCatalogo() {
-      const { data, error } = await _supabase.from('planes').select('*');
-      const select = document.getElementById('select-planes-admin');
-      if (error || !data || data.length === 0) {
-        select.innerHTML = '<option value="">No hay planes en la base de datos</option>';
-        catalogoPlanes = [];
-        return;
-      }
-      catalogoPlanes = data;
-      select.innerHTML = '<option value="">Seleccioná un plan...</option>' + 
-        data.map(p => `<option value="${p.id}">${p.nombre_plan} (${p.creditos} Créditos - $${p.precio})</option>`).join('');
-    }
-
-    function seleccionarPlanCatalogo() {
-      const idPlan = document.getElementById('select-planes-admin').value;
-      const planEncontrado = catalogoPlanes.find(p => p.id == idPlan);
-      if (planEncontrado) {
-        document.getElementById('pago-creditos').value = planEncontrado.creditos;
-        document.getElementById('pago-monto').value = planEncontrado.precio;
-      }
+      document.getElementById('reserva-fecha').value = fechaIso;
+      actualizarTurnosDisponibles();
     }
 
     // -------------------------------------------------------------
@@ -435,25 +503,25 @@
       } else {
         selectTurno.innerHTML = `<option value="">Cerrado</option>`;
         msg.textContent = '❌ El gimnasio no abre los fines de semana.';
-        msg.className = 'text-xs text-center font-semibold text-amber-500';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
         btnReservar.disabled = true;
       }
     }
 
     // -------------------------------------------------------------
-    // VISTA SOCIO
+    // PORTAL DEL SOCIO
     // -------------------------------------------------------------
     async function buscarSocio() {
       const socioId = document.getElementById('socio-id').value.trim();
       const msg = document.getElementById('mensaje');
       if (!socioId) return;
 
-      msg.textContent = 'Buscando en base de datos...';
+      msg.textContent = 'Buscando perfil...';
       try {
         const { data: socio, error } = await _supabase.from('socios').select('*').eq('id', socioId).maybeSingle();
         if (error || !socio) {
-          msg.textContent = 'Socio no encontrado. Registrate en recepción.';
-          msg.className = 'text-sm font-semibold text-red-500';
+          msg.textContent = 'Socio no encontrado. Solicitá tu alta en recepción.';
+          msg.className = 'text-xs font-semibold text-rose-500';
           return;
         }
 
@@ -462,7 +530,6 @@
         socioActual = socio;
         document.getElementById('socio-nombre').textContent = `${socio.nombre} ${socio.apellido}`;
 
-        // Validación exacta de Cumpleaños
         if (socio.fecha_nacimiento && esCumpleaniosHoy(socio.fecha_nacimiento)) {
           document.getElementById('socio-cumple-msg').classList.remove('hidden');
         } else {
@@ -479,10 +546,10 @@
           const hoyStr = new Date().toISOString().split('T')[0];
           if (pagoActual.fecha_vencimiento < hoyStr) {
             badgeEstado.textContent = 'VENCIDO';
-            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-red-900/50 text-red-400';
+            badgeEstado.className = 'text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20';
           } else {
-            badgeEstado.textContent = 'AL DÍA';
-            badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-400';
+            badgeEstado.textContent = 'ACTIVO';
+            badgeEstado.className = 'text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20';
           }
         } else {
           pagoActual = null;
@@ -490,17 +557,16 @@
           document.getElementById('socio-creditos').textContent = '0';
           document.getElementById('socio-vencimiento').textContent = 'N/A';
           badgeEstado.textContent = 'INACTIVO';
-          badgeEstado.className = 'text-xs font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400';
+          badgeEstado.className = 'text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400';
         }
 
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('socio-panel').classList.remove('hidden');
       } catch (err) {
-        msg.textContent = 'Error de comunicación con Supabase.';
+        msg.textContent = 'Error de conexión con Supabase.';
       }
     }
 
-    // CONFIRMAR RESERVA (REFORZADO CON LÍMITE DE 15 CUPOS POR TURNO/DÍA)
     async function confirmarReserva() {
       const msg = document.getElementById('reserva-mensaje');
       const btn = document.getElementById('btn-reservar');
@@ -509,18 +575,17 @@
 
       if (!turno) {
         msg.textContent = '⚠️ Seleccioná un turno válido.';
-        msg.className = 'text-xs text-center font-semibold text-amber-500';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
         return;
       }
       if (!pagoActual || pagoActual.creditos_disponibles <= 0) {
-        msg.textContent = '❌ No tenés créditos disponibles.';
-        msg.className = 'text-xs text-center font-semibold text-red-500';
+        msg.textContent = '❌ No tenés créditos disponibles en tu plan.';
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
         return;
       }
 
       btn.disabled = true;
       try {
-        // 1. Contar cuántos socios ya reservaron exactamente esa fecha y hora
         const { count, error: errCount } = await _supabase
           .from('reservas')
           .select('*', { count: 'exact', head: true })
@@ -530,13 +595,12 @@
         if (errCount) throw errCount;
 
         if (count >= MAX_CUPO_POR_CLASE) {
-          msg.textContent = `🚫 TURNO COMPLETO: Ya se alcanzaron los ${MAX_CUPO_POR_CLASE} cupos máximos permitidos para este horario.`;
-          msg.className = 'text-xs text-center font-bold text-red-500';
+          msg.textContent = `🚫 TURNO COMPLETO: Límite de ${MAX_CUPO_POR_CLASE} personas alcanzado.`;
+          msg.className = 'text-xs text-center font-bold text-rose-500';
           btn.disabled = false;
           return;
         }
 
-        // 2. Verificar que el mismo socio no tenga reserva repetida en este turno
         const { data: reservaExistente } = await _supabase
           .from('reservas')
           .select('id')
@@ -546,37 +610,35 @@
           .maybeSingle();
 
         if (reservaExistente) {
-          msg.textContent = '⚠️ Ya tenés una reserva en este mismo día y turno.';
-          msg.className = 'text-xs text-center font-semibold text-amber-500';
+          msg.textContent = '⚠️ Ya poseés una reserva registrada para este turno.';
+          msg.className = 'text-xs text-center font-semibold text-amber-400';
           btn.disabled = false;
           return;
         }
 
-        // 3. Registrar la nueva reserva
         const { error: errReserva } = await _supabase
           .from('reservas')
           .insert([{ socio_id: socioActual.id, fecha, turno, asistencia: false }]);
 
         if (errReserva) throw errReserva;
 
-        // 4. Descontar 1 crédito al socio
         const nuevosCreditos = pagoActual.creditos_disponibles - 1;
         await _supabase.from('pagos_creditos').update({ creditos_disponibles: nuevosCreditos }).eq('socio_id', socioActual.id);
 
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
-        msg.textContent = `✅ ¡Reserva realizada con éxito! (${count + 1}/${MAX_CUPO_POR_CLASE} cupos ocupados)`;
-        msg.className = 'text-xs text-center font-bold text-emerald-400';
+        msg.textContent = `✅ ¡Reserva confirmada con éxito! (${count + 1}/${MAX_CUPO_POR_CLASE} cupos ocupados)`;
+        msg.className = 'text-xs text-center font-bold text-brand-400';
       } catch (err) {
-        msg.textContent = '❌ Error al procesar la reserva: ' + err.message;
-        msg.className = 'text-xs text-center font-semibold text-red-500';
+        msg.textContent = '❌ Error al procesar reserva: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
       } finally {
         btn.disabled = false;
       }
     }
 
     // -------------------------------------------------------------
-    // ADMINISTRADOR: FUNCIONES Y METRICAS
+    // VISTA ADMINISTRADOR
     // -------------------------------------------------------------
     function toggleModoAdmin() {
       const vSocio = document.getElementById('vista-socio');
@@ -586,11 +648,11 @@
       if (vAdmin.classList.contains('hidden')) {
         vSocio.classList.add('hidden');
         vAdmin.classList.remove('hidden');
-        btnTexto.textContent = "Volver a Vista Socio";
+        btnTexto.textContent = "Vista Socio";
       } else {
         vAdmin.classList.add('hidden');
         vSocio.classList.remove('hidden');
-        btnTexto.textContent = "Modo Administrador";
+        btnTexto.textContent = "Panel Administrador";
       }
     }
 
@@ -605,11 +667,30 @@
       }
     }
 
-    async function cargarStatsAdmin() {
-      const hoyObj = new Date();
-      const hoyStr = hoyObj.toISOString().split('T')[0];
+    async function probarConexionSupabase() {
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      
+      dot.className = "w-3 h-3 rounded-full bg-yellow-500 animate-pulse";
+      text.textContent = "Probando respuesta de base de datos...";
 
-      // 1. Total de Socios y Cumpleaños Hoy
+      try {
+        const { error } = await _supabase.from('socios').select('id').limit(1);
+        if (error) throw error;
+
+        dot.className = "w-3 h-3 rounded-full bg-emerald-500";
+        text.textContent = "✅ Conexión con Supabase funcionando correctamente.";
+        cargarStatsAdmin();
+        cargarPlanesCatalogo();
+      } catch (err) {
+        dot.className = "w-3 h-3 rounded-full bg-rose-500";
+        text.textContent = "❌ Error en conexión API: " + err.message;
+      }
+    }
+
+    async function cargarStatsAdmin() {
+      const hoyStr = new Date().toISOString().split('T')[0];
+
       const { data: socios } = await _supabase.from('socios').select('*');
       document.getElementById('stat-total-socios').textContent = socios ? socios.length : 0;
 
@@ -621,14 +702,13 @@
         contenedorCumples.textContent = "Ninguno hoy";
       }
 
-      // 2. Vencidos y Activos
       const { data: vencidos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
       document.getElementById('stat-vencidos').textContent = vencidos ? vencidos.length : 0;
 
       const { data: activos } = await _supabase.from('pagos_creditos').select('*').gte('fecha_vencimiento', hoyStr);
       document.getElementById('stat-planes-activos').textContent = activos ? activos.length : 0;
 
-      // 3. APARTADO DE PRÓXIMOS VENCIMIENTOS (De hoy a 5 días)
+      // PRÓXIMOS VENCIMIENTOS (3 A 5 DÍAS)
       const en5DiasObj = new Date();
       en5DiasObj.setDate(en5DiasObj.getDate() + 5);
       const en5DiasStr = en5DiasObj.toISOString().split('T')[0];
@@ -646,22 +726,20 @@
       if (proximosVenc && proximosVenc.length > 0) {
         cantVencElem.textContent = proximosVenc.length;
         listaVencElem.innerHTML = proximosVenc.map(item => {
-          // Calcular días restantes
           const expDate = new Date(item.fecha_vencimiento + 'T00:00:00');
           const hoyDate = new Date(hoyStr + 'T00:00:00');
           const diffDias = Math.ceil((expDate - hoyDate) / (1000 * 60 * 60 * 24));
-
-          const nombreSocio = item.nombre ? item.nombre : `Socio ID: ${item.socio_id}`;
+          const nombreSocio = item.nombre ? item.nombre : `DNI: ${item.socio_id}`;
 
           return `
-            <div class="flex justify-between items-center bg-zinc-800/80 p-2.5 rounded-lg border border-zinc-700/60">
+            <div class="flex justify-between items-center bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">
               <div>
-                <p class="font-bold text-zinc-100">${nombreSocio} <span class="text-[10px] text-zinc-400 font-normal">(DNI: ${item.socio_id})</span></p>
-                <p class="text-[11px] text-zinc-400">Plan: <span class="text-amber-400">${item.plan || 'S/N'}</span></p>
+                <p class="font-extrabold text-zinc-100 text-xs">${nombreSocio}</p>
+                <p class="text-[10px] text-zinc-400">Plan: <span class="text-amber-400 font-semibold">${item.plan || 'S/N'}</span></p>
               </div>
               <div class="text-right">
                 <p class="font-mono font-bold text-amber-300 text-xs">${formatFecha(item.fecha_vencimiento)}</p>
-                <p class="text-[10px] text-zinc-400 font-semibold">${diffDias === 0 ? 'Vence Hoy' : 'Vence en ' + diffDias + ' día(s)'}</p>
+                <p class="text-[10px] text-zinc-400 font-medium">${diffDias === 0 ? 'Vence Hoy' : 'Vence en ' + diffDias + ' día(s)'}</p>
               </div>
             </div>
           `;
@@ -669,6 +747,54 @@
       } else {
         cantVencElem.textContent = "0";
         listaVencElem.innerHTML = '<p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>';
+      }
+    }
+
+    async function guardarNuevoPlan() {
+      const nombre_plan = document.getElementById('plan-nombre').value.trim();
+      const creditos = parseInt(document.getElementById('plan-creditos').value);
+      const precio = parseFloat(document.getElementById('plan-precio').value);
+      const msg = document.getElementById('msg-admin-plan');
+
+      if (!nombre_plan || isNaN(creditos) || isNaN(precio)) {
+        msg.textContent = "Completá nombre, créditos y precio.";
+        msg.className = "text-xs text-rose-500";
+        return;
+      }
+
+      const { error } = await _supabase.from('planes').insert([{ nombre_plan, creditos, precio }]);
+      if (!error) {
+        msg.textContent = "✅ Plan guardado en el catálogo.";
+        msg.className = "text-xs text-brand-400";
+        document.getElementById('plan-nombre').value = '';
+        document.getElementById('plan-creditos').value = '';
+        document.getElementById('plan-precio').value = '';
+        cargarPlanesCatalogo();
+      } else {
+        msg.textContent = "❌ Error: " + error.message;
+        msg.className = "text-xs text-rose-500";
+      }
+    }
+
+    async function cargarPlanesCatalogo() {
+      const { data, error } = await _supabase.from('planes').select('*');
+      const select = document.getElementById('select-planes-admin');
+      if (error || !data || data.length === 0) {
+        select.innerHTML = '<option value="">No hay planes en catálogo</option>';
+        catalogoPlanes = [];
+        return;
+      }
+      catalogoPlanes = data;
+      select.innerHTML = '<option value="">Seleccioná un plan...</option>' + 
+        data.map(p => `<option value="${p.id}">${p.nombre_plan} (${p.creditos} Créditos - $${p.precio})</option>`).join('');
+    }
+
+    function seleccionarPlanCatalogo() {
+      const idPlan = document.getElementById('select-planes-admin').value;
+      const planEncontrado = catalogoPlanes.find(p => p.id == idPlan);
+      if (planEncontrado) {
+        document.getElementById('pago-creditos').value = planEncontrado.creditos;
+        document.getElementById('pago-monto').value = planEncontrado.precio;
       }
     }
 
@@ -683,7 +809,7 @@
 
       if (!id || !nombre || !apellido) {
         msg.textContent = 'DNI, Nombre y Apellido obligatorios.';
-        msg.className = 'text-xs text-red-500';
+        msg.className = 'text-xs text-rose-500';
         return;
       }
 
@@ -692,17 +818,16 @@
       }]);
 
       if (!error) {
-        msg.textContent = `✅ Socio guardado (Estado: ${estado}).`;
-        msg.className = 'text-xs text-emerald-400';
+        msg.textContent = `✅ Socio actualizado (${estado}).`;
+        msg.className = 'text-xs text-brand-400';
         document.getElementById('pago-socio-id').value = id;
         cargarStatsAdmin();
       } else {
         msg.textContent = '❌ Error: ' + error.message;
-        msg.className = 'text-xs text-red-500';
+        msg.className = 'text-xs text-rose-500';
       }
     }
 
-    // REGISTRAR PAGO (INCLUYE NOMBRE DEL SOCIO Y METODO DE PAGO)
     async function registrarPago() {
       const socio_id = document.getElementById('pago-socio-id').value.trim();
       const idPlanSelect = document.getElementById('select-planes-admin').value;
@@ -717,11 +842,10 @@
 
       if (!socio_id || !fecha_vencimiento || isNaN(creditos)) {
         msg.textContent = 'Ingresá DNI, créditos y vencimiento.';
-        msg.className = 'text-xs text-red-500';
+        msg.className = 'text-xs text-rose-500';
         return;
       }
 
-      // Traer Nombre y Apellido del Socio para guardarlo en la tabla de pagos
       const { data: datosSocio } = await _supabase
         .from('socios')
         .select('nombre, apellido')
@@ -729,10 +853,8 @@
         .maybeSingle();
 
       const nombreSocioCompleto = datosSocio ? `${datosSocio.nombre} ${datosSocio.apellido}` : '';
-
       const hoyStr = new Date().toISOString().split('T')[0];
 
-      // Verificar si ya existe registro previo
       const { data: existePago } = await _supabase
         .from('pagos_creditos')
         .select('id')
@@ -742,7 +864,7 @@
       let error;
       const datosPago = {
         socio_id,
-        nombre: nombreSocioCompleto, // <-- Campo "nombre" guardado en pagos_creditos
+        nombre: nombreSocioCompleto,
         plan: nombrePlan,
         fecha_pago: hoyStr,
         fecha_vencimiento,
@@ -761,50 +883,46 @@
       }
 
       if (!error) {
-        msg.textContent = `✅ Pago cargado correctamente (${formaPago}).`;
+        msg.textContent = `✅ Pago guardado correctamente (${formaPago}).`;
         msg.className = 'text-xs text-emerald-400';
         cargarStatsAdmin();
       } else {
         msg.textContent = '❌ Error: ' + error.message;
-        msg.className = 'text-xs text-red-500';
+        msg.className = 'text-xs text-rose-500';
       }
     }
 
-    // VISOR UNIVERSAL DE CUALQUIER TABLA SUPABASE (FORMATEA FECHAS EN DD/MM/AAAA)
     async function verTablaAdmin(nombreTabla) {
       const contenedor = document.getElementById('tabla-resultado-admin');
-      contenedor.innerHTML = '<p class="text-zinc-400 animate-pulse">Consultando ' + nombreTabla + '...</p>';
+      contenedor.innerHTML = '<p class="text-zinc-400 animate-pulse">Cargando datos de ' + nombreTabla + '...</p>';
 
       const { data, error } = await _supabase.from(nombreTabla).select('*');
 
       if (error) {
-        contenedor.innerHTML = `<p class="text-red-500 font-semibold">❌ Error al cargar tabla: ${error.message}</p>`;
+        contenedor.innerHTML = `<p class="text-rose-500 font-semibold">❌ Error al cargar tabla: ${error.message}</p>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        contenedor.innerHTML = `<p class="text-zinc-500 italic">La tabla '${nombreTabla}' está totalmente vacía.</p>`;
+        contenedor.innerHTML = `<p class="text-zinc-500 italic">La tabla '${nombreTabla}' no contiene registros.</p>`;
         return;
       }
 
       let html = `<table class="w-full text-left border-collapse border border-zinc-800">
-        <tr class="bg-zinc-800 text-zinc-200">`;
+        <tr class="bg-zinc-800/80 text-zinc-300">`;
       
       const keys = Object.keys(data[0]);
-      keys.forEach(k => html += `<th class="p-2 border border-zinc-700 uppercase text-[10px] tracking-wider">${k}</th>`);
+      keys.forEach(k => html += `<th class="p-2 border border-zinc-700/80 uppercase text-[10px] tracking-wider font-bold">${k}</th>`);
       html += `</tr>`;
 
       data.forEach(row => {
-        html += `<tr class="border border-zinc-800 hover:bg-zinc-800/50">`;
+        html += `<tr class="border border-zinc-800 hover:bg-zinc-800/40">`;
         keys.forEach(k => {
           let val = row[k];
           if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-          
-          // Formatear fechas YYYY-MM-DD automáticamente a DD/MM/AAAA en la visualización de la tabla
           if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
             val = formatFecha(val);
           }
-
           html += `<td class="p-2 border border-zinc-800 font-mono text-[11px]">${val !== null ? val : '<span class="text-zinc-600">NULL</span>'}</td>`;
         });
         html += `</tr>`;
