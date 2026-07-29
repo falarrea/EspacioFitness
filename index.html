@@ -49,7 +49,6 @@
     .glow-accent {
       box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
     }
-    /* Fade animation */
     .fade-in {
       animation: fadeIn 0.4s ease-out forwards;
     }
@@ -57,7 +56,6 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-track { background: #09090b; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
@@ -106,7 +104,7 @@
         
         <div class="space-y-3">
           <div class="relative">
-            <input type="text" id="socio-id" placeholder="Ej: 94462725" 
+            <input type="text" id="socio-id" placeholder="Insertar DNI o Código Socio" 
                    class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition text-center font-mono text-lg font-bold">
           </div>
           
@@ -157,7 +155,7 @@
           </div>
         </div>
 
-        <!-- RESERVAS CON SELECTOR DE DÍAS (TABS SEMANALES) -->
+        <!-- RESERVAS CON SELECTOR DE DÍAS -->
         <div class="glass-card p-5 rounded-3xl border border-zinc-800/80 space-y-4">
           <div class="flex justify-between items-center">
             <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
@@ -166,11 +164,10 @@
             <span class="text-[10px] text-zinc-500 font-semibold">Máximo 15 cupos/turno</span>
           </div>
           
-          <!-- SELECTOR DE DÍAS (PESTAÑA MÓVIL) -->
+          <!-- SELECTOR DE DÍAS -->
           <div>
             <label class="text-[11px] text-zinc-400 font-medium block mb-2">Seleccioná un día de la semana:</label>
             <div id="selector-dias-container" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-              <!-- Se genera dinámicamente con JS -->
             </div>
             <input type="hidden" id="reserva-fecha">
           </div>
@@ -199,7 +196,7 @@
       <!-- LOGIN ADMIN -->
       <div id="admin-login-box" class="max-w-xs mx-auto glass-card p-6 rounded-3xl text-center space-y-4 border border-zinc-800">
         <h2 class="font-extrabold text-lg text-white">Acceso Administrador</h2>
-        <input type="password" id="admin-pin" placeholder="Clave de acceso" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-2.5 text-center text-white focus:outline-none focus:border-brand-500 font-mono">
+        <input type="password" id="admin-pin" placeholder="Clave (Por defecto: 1234)" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-2.5 text-center text-white focus:outline-none focus:border-brand-500 font-mono">
         <button onclick="verificarPinAdmin()" class="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-2.5 rounded-2xl transition">Ingresar</button>
       </div>
 
@@ -238,7 +235,7 @@
           </div>
         </div>
 
-        <!-- APARTADO DE PRÓXIMOS VENCIMIENTOS (3 a 5 DÍAS) -->
+        <!-- APARTADO DE PRÓXIMOS VENCIMIENTOS -->
         <div class="glass-card p-5 rounded-3xl border border-zinc-800/80 space-y-3">
           <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
             <h3 class="font-extrabold text-xs text-amber-400 flex items-center gap-2 uppercase tracking-wider">
@@ -389,6 +386,8 @@
     let socioActual = null;
     let pagoActual = null;
     let catalogoPlanes = [];
+    let modoAdmin = false;
+    let adminAutenticado = false;
 
     // Inicializar fechas por defecto
     const hoy = new Date();
@@ -398,6 +397,55 @@
 
     // Generar Selector de Días de la semana para reservas
     generarPillsDias();
+
+    // -------------------------------------------------------------
+    // FUNCIONES DE VISTA Y MODO ADMIN
+    // -------------------------------------------------------------
+    function toggleModoAdmin() {
+      const vistaSocio = document.getElementById('vista-socio');
+      const vistaAdmin = document.getElementById('vista-admin');
+      const txtBtn = document.getElementById('texto-btn-vista');
+
+      modoAdmin = !modoAdmin;
+
+      if (modoAdmin) {
+        vistaSocio.classList.add('hidden');
+        vistaAdmin.classList.remove('hidden');
+        txtBtn.textContent = 'Portal Socio';
+
+        if (adminAutenticado) {
+          document.getElementById('admin-login-box').classList.add('hidden');
+          document.getElementById('admin-dashboard').classList.remove('hidden');
+          inicializarDashboardAdmin();
+        } else {
+          document.getElementById('admin-login-box').classList.remove('hidden');
+          document.getElementById('admin-dashboard').classList.add('hidden');
+        }
+      } else {
+        vistaAdmin.classList.add('hidden');
+        vistaSocio.classList.remove('hidden');
+        txtBtn.textContent = 'Panel Administrador';
+      }
+    }
+
+    function verificarPinAdmin() {
+      const pinInput = document.getElementById('admin-pin').value.trim();
+      if (pinInput === '1234' || pinInput === 'admin') {
+        adminAutenticado = true;
+        document.getElementById('admin-login-box').classList.add('hidden');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        inicializarDashboardAdmin();
+      } else {
+        alert('Clave incorrecta. (PIN por defecto: 1234)');
+      }
+    }
+
+    async function inicializarDashboardAdmin() {
+      await probarConexionSupabase();
+      await cargarMetricasAdmin();
+      await cargarProximosVencimientos();
+      await cargarCatalogoPlanes();
+    }
 
     // -------------------------------------------------------------
     // FUNCIONES DE FECHAS & TABS
@@ -421,54 +469,37 @@
       return diaNac === hoyObj.getDate() && mesNac === (hoyObj.getMonth() + 1);
     }
 
-   // 1. Nueva función auxiliar de fecha local (poner en línea 424)
-function aFechaISO(d) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-// Genera 7 botones de días rápidamente (Tabs semanales)
-function generarPillsDias() {
-  const container = document.getElementById('selector-dias-container');
-  container.innerHTML = '';
-
-  const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const hoyObj = new Date();
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(hoyObj.getDate() + i);
-
-    const fechaIso = aFechaISO(d);
-    const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
-    const diaNum = String(d.getDate()).padStart(2, '0');
-    const mesNum = String(d.getMonth() + 1).padStart(2, '0');
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.dataset.fecha = fechaIso;
-    btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
-      i === 0 
-        ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
-        : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
-    }`;
-    
-    btn.innerHTML = `
-      <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
-      <span class="block text-xs font-mono font-bold">${diaNum}/${mesNum}</span>
-    `;
-
-    btn.onclick = () => seleccionarDiaTab(btn, fechaIso);
-    container.appendChild(btn);
-
-    if (i === 0) {
-      document.getElementById('reserva-fecha').value = fechaIso;
-      actualizarTurnosDisponibles();
+    function aFechaISO(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
-  }
-}
+
+    function generarPillsDias() {
+      const container = document.getElementById('selector-dias-container');
+      container.innerHTML = '';
+
+      const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const hoyObj = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(hoyObj.getDate() + i);
+
+        const fechaIso = aFechaISO(d);
+        const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
+        const diaNum = String(d.getDate()).padStart(2, '0');
+        const mesNum = String(d.getMonth() + 1).padStart(2, '0');
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.fecha = fechaIso;
+        btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
+          i === 0 
+            ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
+            : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
+        }`;
         
         btn.innerHTML = `
           <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
@@ -498,38 +529,38 @@ function generarPillsDias() {
     // -------------------------------------------------------------
     // HORARIOS Y REGLAS DE TURNOS
     // -------------------------------------------------------------
-function actualizarTurnosDisponibles() {
-  const inputFecha = document.getElementById('reserva-fecha').value;
-  const selectTurno = document.getElementById('reserva-turno');
-  const btnReservar = document.getElementById('btn-reservar');
-  const msg = document.getElementById('reserva-mensaje');
+    function actualizarTurnosDisponibles() {
+      const inputFecha = document.getElementById('reserva-fecha').value;
+      const selectTurno = document.getElementById('reserva-turno');
+      const btnReservar = document.getElementById('btn-reservar');
+      const msg = document.getElementById('reserva-mensaje');
 
-  selectTurno.innerHTML = '';
-  msg.textContent = '';
-  btnReservar.disabled = false;
+      selectTurno.innerHTML = '';
+      msg.textContent = '';
+      btnReservar.disabled = false;
 
-  if (!inputFecha) return;
+      if (!inputFecha) return;
 
-  const partes = inputFecha.split('-');
-  const fechaObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
-  const diaSemana = fechaObj.getDay();
+      const partes = inputFecha.split('-');
+      const fechaObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+      const diaSemana = fechaObj.getDay();
 
-  if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // L, M, V
-    selectTurno.innerHTML = `
-      <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
-      <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs</option>
-    `;
-  } else if (diaSemana === 2 || diaSemana === 4) { // M, J
-    selectTurno.innerHTML = `
-      <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
-    `;
-  } else {
-    selectTurno.innerHTML = `<option value="">Cerrado</option>`;
-    msg.textContent = '❌ El gimnasio no abre los fines de semana.';
-    msg.className = 'text-xs text-center font-semibold text-amber-400';
-    btnReservar.disabled = true;
-  }
-}
+      if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // L, M, V
+        selectTurno.innerHTML = `
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
+          <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs</option>
+        `;
+      } else if (diaSemana === 2 || diaSemana === 4) { // M, J
+        selectTurno.innerHTML = `
+          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
+        `;
+      } else {
+        selectTurno.innerHTML = `<option value="">Cerrado</option>`;
+        msg.textContent = '❌ El gimnasio no abre los fines de semana.';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
+        btnReservar.disabled = true;
+      }
+    }
 
     // -------------------------------------------------------------
     // PORTAL DEL SOCIO
@@ -641,16 +672,22 @@ function actualizarTurnosDisponibles() {
 
         const { error: errReserva } = await _supabase
           .from('reservas')
-          .insert([{ socio_id: socioActual.id, fecha, turno, asistencia: false }]);
+          .insert([{ socio_id: socioActual.id, fecha: fecha, turno: turno }]);
 
         if (errReserva) throw errReserva;
 
         const nuevosCreditos = pagoActual.creditos_disponibles - 1;
-        await _supabase.from('pagos_creditos').update({ creditos_disponibles: nuevosCreditos }).eq('socio_id', socioActual.id);
+        const { error: errPago } = await _supabase
+          .from('pagos_creditos')
+          .update({ creditos_disponibles: nuevosCreditos })
+          .eq('id', pagoActual.id);
+
+        if (errPago) throw errPago;
 
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
-        msg.textContent = `✅ ¡Reserva confirmada con éxito! (${count + 1}/${MAX_CUPO_POR_CLASE} cupos ocupados)`;
+
+        msg.textContent = '🎉 ¡Reserva realizada con éxito!';
         msg.className = 'text-xs text-center font-bold text-brand-400';
       } catch (err) {
         msg.textContent = '❌ Error al procesar reserva: ' + err.message;
@@ -661,297 +698,306 @@ function actualizarTurnosDisponibles() {
     }
 
     // -------------------------------------------------------------
-    // VISTA ADMINISTRADOR
+    // FUNCIONES ADMINISTRATIVAS
     // -------------------------------------------------------------
-    function toggleModoAdmin() {
-      const vSocio = document.getElementById('vista-socio');
-      const vAdmin = document.getElementById('vista-admin');
-      const btnTexto = document.getElementById('texto-btn-vista');
-
-      if (vAdmin.classList.contains('hidden')) {
-        vSocio.classList.add('hidden');
-        vAdmin.classList.remove('hidden');
-        btnTexto.textContent = "Vista Socio";
-      } else {
-        vAdmin.classList.add('hidden');
-        vSocio.classList.remove('hidden');
-        btnTexto.textContent = "Panel Administrador";
-      }
-    }
-
-    function verificarPinAdmin() {
-      const pin = document.getElementById('admin-pin').value;
-      if (pin === 'admin123') {
-        document.getElementById('admin-login-box').classList.add('hidden');
-        document.getElementById('admin-dashboard').classList.remove('hidden');
-        probarConexionSupabase();
-      } else {
-        alert('Clave incorrecta.');
-      }
-    }
-
     async function probarConexionSupabase() {
       const dot = document.getElementById('status-dot');
-      const text = document.getElementById('status-text');
-      
-      dot.className = "w-3 h-3 rounded-full bg-yellow-500 animate-pulse";
-      text.textContent = "Probando respuesta de base de datos...";
+      const txt = document.getElementById('status-text');
+      dot.className = 'w-3 h-3 rounded-full bg-yellow-500 animate-pulse';
+      txt.textContent = 'Verificando conexión...';
 
       try {
-        const { error } = await _supabase.from('socios').select('id').limit(1);
+        const { error } = await _supabase.from('socios').select('count', { count: 'exact', head: true });
         if (error) throw error;
-
-        dot.className = "w-3 h-3 rounded-full bg-emerald-500";
-        text.textContent = "✅ Conexión con Supabase funcionando correctamente.";
-        cargarStatsAdmin();
-        cargarPlanesCatalogo();
+        dot.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500';
+        txt.textContent = 'Conexión activa y funcionando correctamente.';
       } catch (err) {
-        dot.className = "w-3 h-3 rounded-full bg-rose-500";
-        text.textContent = "❌ Error en conexión API: " + err.message;
+        dot.className = 'w-3 h-3 rounded-full bg-rose-500';
+        txt.textContent = 'Error de conexión: ' + (err.message || 'Sin respuesta');
       }
     }
 
-    async function cargarStatsAdmin() {
-      const hoyStr = new Date().toISOString().split('T')[0];
+    async function cargarMetricasAdmin() {
+      try {
+        const { count: totalSocios } = await _supabase.from('socios').select('*', { count: 'exact', head: true });
+        document.getElementById('stat-total-socios').textContent = totalSocios || 0;
 
-      const { data: socios } = await _supabase.from('socios').select('*');
-      document.getElementById('stat-total-socios').textContent = socios ? socios.length : 0;
+        const { data: socios } = await _supabase.from('socios').select('*');
+        const { data: pagos } = await _supabase.from('pagos_creditos').select('*');
 
-      const cumplesHoy = (socios || []).filter(s => esCumpleaniosHoy(s.fecha_nacimiento));
-      const contenedorCumples = document.getElementById('stat-cumples');
-      if (cumplesHoy.length > 0) {
-        contenedorCumples.innerHTML = cumplesHoy.map(c => `🎂 <span class="font-bold text-amber-300">${c.nombre} ${c.apellido}</span> (DNI: ${c.id})`).join('<br>');
-      } else {
-        contenedorCumples.textContent = "Ninguno hoy";
+        const hoyStr = new Date().toISOString().split('T')[0];
+        let vencidosCount = 0;
+        let activosCount = 0;
+
+        if (pagos) {
+          pagos.forEach(p => {
+            if (p.fecha_vencimiento && p.fecha_vencimiento < hoyStr) {
+              vencidosCount++;
+            } else {
+              activosCount++;
+            }
+          });
+        }
+
+        document.getElementById('stat-vencidos').textContent = vencidosCount;
+        document.getElementById('stat-planes-activos').textContent = activosCount;
+
+        let cumplesHoy = [];
+        if (socios) {
+          socios.forEach(s => {
+            if (s.fecha_nacimiento && esCumpleaniosHoy(s.fecha_nacimiento)) {
+              cumplesHoy.push(`${s.nombre} ${s.apellido}`);
+            }
+          });
+        }
+        const statCumples = document.getElementById('stat-cumples');
+        if (cumplesHoy.length > 0) {
+          statCumples.textContent = cumplesHoy.join(', ');
+          statCumples.className = 'text-xs font-bold text-amber-300 mt-1';
+        } else {
+          statCumples.textContent = 'Ninguno hoy';
+          statCumples.className = 'text-xs text-zinc-500 mt-1';
+        }
+      } catch (e) {
+        console.error('Error al cargar métricas:', e);
       }
+    }
 
-      const { data: vencidos } = await _supabase.from('pagos_creditos').select('*').lt('fecha_vencimiento', hoyStr);
-      document.getElementById('stat-vencidos').textContent = vencidos ? vencidos.length : 0;
+    async function cargarProximosVencimientos() {
+      const lista = document.getElementById('lista-proximos-vencimientos');
+      const cantSpan = document.getElementById('cant-proximos-venc');
+      lista.innerHTML = '';
 
-      const { data: activos } = await _supabase.from('pagos_creditos').select('*').gte('fecha_vencimiento', hoyStr);
-      document.getElementById('stat-planes-activos').textContent = activos ? activos.length : 0;
+      try {
+        const { data: pagos, error } = await _supabase.from('pagos_creditos').select('*');
+        if (error || !pagos) {
+          lista.innerHTML = '<p class="text-zinc-500 italic text-center py-2">No se pudieron cargar los datos.</p>';
+          cantSpan.textContent = '0';
+          return;
+        }
 
-      // PRÓXIMOS VENCIMIENTOS (3 A 5 DÍAS)
-      const en5DiasObj = new Date();
-      en5DiasObj.setDate(en5DiasObj.getDate() + 5);
-      const en5DiasStr = en5DiasObj.toISOString().split('T')[0];
+        const hoyObj = new Date();
+        hoyObj.setHours(0,0,0,0);
+        const dentro5Dias = new Date(hoyObj);
+        dentro5Dias.setDate(dentro5Dias.getDate() + 5);
 
-      const { data: proximosVenc } = await _supabase
-        .from('pagos_creditos')
-        .select('*')
-        .gte('fecha_vencimiento', hoyStr)
-        .lte('fecha_vencimiento', en5DiasStr)
-        .order('fecha_vencimiento', { ascending: true });
+        const proximos = pagos.filter(p => {
+          if (!p.fecha_vencimiento) return false;
+          const fVenc = new Date(p.fecha_vencimiento + 'T00:00:00');
+          return fVenc >= hoyObj && fVenc <= dentro5Dias;
+        });
 
-      const listaVencElem = document.getElementById('lista-proximos-vencimientos');
-      const cantVencElem = document.getElementById('cant-proximos-venc');
+        cantSpan.textContent = proximos.length;
 
-      if (proximosVenc && proximosVenc.length > 0) {
-        cantVencElem.textContent = proximosVenc.length;
-        listaVencElem.innerHTML = proximosVenc.map(item => {
-          const expDate = new Date(item.fecha_vencimiento + 'T00:00:00');
-          const hoyDate = new Date(hoyStr + 'T00:00:00');
-          const diffDias = Math.ceil((expDate - hoyDate) / (1000 * 60 * 60 * 24));
-          const nombreSocio = item.nombre ? item.nombre : `DNI: ${item.socio_id}`;
+        if (proximos.length === 0) {
+          lista.innerHTML = '<p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>';
+          return;
+        }
 
-          return `
-            <div class="flex justify-between items-center bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">
-              <div>
-                <p class="font-extrabold text-zinc-100 text-xs">${nombreSocio}</p>
-                <p class="text-[10px] text-zinc-400">Plan: <span class="text-amber-400 font-semibold">${item.plan || 'S/N'}</span></p>
-              </div>
-              <div class="text-right">
-                <p class="font-mono font-bold text-amber-300 text-xs">${formatFecha(item.fecha_vencimiento)}</p>
-                <p class="text-[10px] text-zinc-400 font-medium">${diffDias === 0 ? 'Vence Hoy' : 'Vence en ' + diffDias + ' día(s)'}</p>
-              </div>
+        proximos.forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'flex justify-between items-center bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800';
+          div.innerHTML = `
+            <div>
+              <p class="font-bold text-white">Socio ID: ${p.socio_id}</p>
+              <p class="text-[10px] text-zinc-400">Plan: ${p.plan || 'N/A'} | Créditos: ${p.creditos_disponibles ?? '-'}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                Vence: ${formatFecha(p.fecha_vencimiento)}
+              </span>
             </div>
           `;
-        }).join('');
-      } else {
-        cantVencElem.textContent = "0";
-        listaVencElem.innerHTML = '<p class="text-zinc-500 italic text-center py-2">No hay planes por vencer en los próximos 5 días.</p>';
+          lista.appendChild(div);
+        });
+      } catch (err) {
+        lista.innerHTML = '<p class="text-zinc-500 italic text-center py-2">Error al procesar vencimientos.</p>';
+      }
+    }
+
+    async function cargarCatalogoPlanes() {
+      const selectAdmin = document.getElementById('select-planes-admin');
+      selectAdmin.innerHTML = '<option value="">Cargando planes...</option>';
+      try {
+        const { data: planes, error } = await _supabase.from('planes').select('*');
+        if (error || !planes) {
+          selectAdmin.innerHTML = '<option value="">Plan Personalizado</option>';
+          catalogoPlanes = [];
+          return;
+        }
+        catalogoPlanes = planes;
+        selectAdmin.innerHTML = '<option value="">-- Seleccionar Plan del Catálogo --</option>';
+        planes.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id || p.nombre;
+          opt.textContent = `${p.nombre} - $${p.precio} (${p.creditos} créd.)`;
+          selectAdmin.appendChild(opt);
+        });
+      } catch (e) {
+        selectAdmin.innerHTML = '<option value="">Plan Personalizado</option>';
+      }
+    }
+
+    function seleccionarPlanCatalogo() {
+      const selectAdmin = document.getElementById('select-planes-admin');
+      const val = selectAdmin.value;
+      if (!val) return;
+      const plan = catalogoPlanes.find(p => (p.id == val || p.nombre == val));
+      if (plan) {
+        document.getElementById('pago-monto').value = plan.precio || '';
+        document.getElementById('pago-creditos').value = plan.creditos || '';
       }
     }
 
     async function guardarNuevoPlan() {
-      const nombre_plan = document.getElementById('plan-nombre').value.trim();
+      const msg = document.getElementById('msg-admin-plan');
+      const nombre = document.getElementById('plan-nombre').value.trim();
       const creditos = parseInt(document.getElementById('plan-creditos').value);
       const precio = parseFloat(document.getElementById('plan-precio').value);
-      const msg = document.getElementById('msg-admin-plan');
 
-      if (!nombre_plan || isNaN(creditos) || isNaN(precio)) {
-        msg.textContent = "Completá nombre, créditos y precio.";
-        msg.className = "text-xs text-rose-500";
+      if (!nombre || isNaN(creditos) || isNaN(precio)) {
+        msg.textContent = '⚠️ Completa todos los campos.';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
         return;
       }
 
-      const { error } = await _supabase.from('planes').insert([{ nombre_plan, creditos, precio }]);
-      if (!error) {
-        msg.textContent = "✅ Plan guardado en el catálogo.";
-        msg.className = "text-xs text-brand-400";
+      msg.textContent = 'Guardando...';
+      try {
+        const { error } = await _supabase.from('planes').insert([{ nombre, creditos, precio }]);
+        if (error) throw error;
+        msg.textContent = '✅ Plan guardado exitosamente.';
+        msg.className = 'text-xs text-center font-semibold text-brand-400';
         document.getElementById('plan-nombre').value = '';
         document.getElementById('plan-creditos').value = '';
         document.getElementById('plan-precio').value = '';
-        cargarPlanesCatalogo();
-      } else {
-        msg.textContent = "❌ Error: " + error.message;
-        msg.className = "text-xs text-rose-500";
-      }
-    }
-
-    async function cargarPlanesCatalogo() {
-      const { data, error } = await _supabase.from('planes').select('*');
-      const select = document.getElementById('select-planes-admin');
-      if (error || !data || data.length === 0) {
-        select.innerHTML = '<option value="">No hay planes en catálogo</option>';
-        catalogoPlanes = [];
-        return;
-      }
-      catalogoPlanes = data;
-      select.innerHTML = '<option value="">Seleccioná un plan...</option>' + 
-        data.map(p => `<option value="${p.id}">${p.nombre_plan} (${p.creditos} Créditos - $${p.precio})</option>`).join('');
-    }
-
-    function seleccionarPlanCatalogo() {
-      const idPlan = document.getElementById('select-planes-admin').value;
-      const planEncontrado = catalogoPlanes.find(p => p.id == idPlan);
-      if (planEncontrado) {
-        document.getElementById('pago-creditos').value = planEncontrado.creditos;
-        document.getElementById('pago-monto').value = planEncontrado.precio;
+        cargarCatalogoPlanes();
+      } catch (err) {
+        msg.textContent = '❌ Error: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
       }
     }
 
     async function guardarSocio() {
+      const msg = document.getElementById('msg-admin-socio');
       const id = document.getElementById('nuevo-id').value.trim();
+      const estado = document.getElementById('nuevo-estado').value;
       const nombre = document.getElementById('nuevo-nombre').value.trim();
       const apellido = document.getElementById('nuevo-apellido').value.trim();
       const telefono = document.getElementById('nuevo-telefono').value.trim();
-      const fecha_nacimiento = document.getElementById('nuevo-nacimiento').value || null;
-      const estado = document.getElementById('nuevo-estado').value;
-      const msg = document.getElementById('msg-admin-socio');
+      const nacimiento = document.getElementById('nuevo-nacimiento').value;
 
       if (!id || !nombre || !apellido) {
-        msg.textContent = 'DNI, Nombre y Apellido obligatorios.';
-        msg.className = 'text-xs text-rose-500';
+        msg.textContent = '⚠️ DNI, Nombre y Apellido son obligatorios.';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
         return;
       }
 
-      const { error } = await _supabase.from('socios').upsert([{ 
-        id, nombre, apellido, telefono, fecha_nacimiento, estado 
-      }]);
+      msg.textContent = 'Guardando socio...';
+      try {
+        const payload = {
+          id,
+          estado,
+          nombre,
+          apellido,
+          telefono: telefono || null,
+          fecha_nacimiento: nacimiento || null
+        };
 
-      if (!error) {
-        msg.textContent = `✅ Socio actualizado (${estado}).`;
-        msg.className = 'text-xs text-brand-400';
-        document.getElementById('pago-socio-id').value = id;
-        cargarStatsAdmin();
-      } else {
-        msg.textContent = '❌ Error: ' + error.message;
-        msg.className = 'text-xs text-rose-500';
+        const { error } = await _supabase.from('socios').upsert([payload]);
+        if (error) throw error;
+
+        msg.textContent = '✅ Socio guardado correctamente.';
+        msg.className = 'text-xs text-center font-semibold text-brand-400';
+        document.getElementById('nuevo-id').value = '';
+        document.getElementById('nuevo-nombre').value = '';
+        document.getElementById('nuevo-apellido').value = '';
+        document.getElementById('nuevo-telefono').value = '';
+        document.getElementById('nuevo-nacimiento').value = '';
+        cargarMetricasAdmin();
+      } catch (err) {
+        msg.textContent = '❌ Error: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
       }
     }
 
     async function registrarPago() {
-      const socio_id = document.getElementById('pago-socio-id').value.trim();
-      const idPlanSelect = document.getElementById('select-planes-admin').value;
-      const planObj = catalogoPlanes.find(p => p.id == idPlanSelect);
-      const nombrePlan = planObj ? planObj.nombre_plan : 'Personalizado';
-
-      const creditos = parseInt(document.getElementById('pago-creditos').value);
-      const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
-      const fecha_vencimiento = document.getElementById('pago-vencimiento').value;
-      const formaPago = document.getElementById('pago-metodo')?.value || 'Efectivo';
       const msg = document.getElementById('msg-admin-pago');
+      const socioId = document.getElementById('pago-socio-id').value.trim();
+      const selectPlan = document.getElementById('select-planes-admin');
+      const planNombre = selectPlan.options[selectPlan.selectedIndex]?.text.split(' - ')[0] || 'Plan Personalizado';
+      const metodo = document.getElementById('pago-metodo').value;
+      const monto = parseFloat(document.getElementById('pago-monto').value);
+      const creditos = parseInt(document.getElementById('pago-creditos').value);
+      const vencimiento = document.getElementById('pago-vencimiento').value;
 
-      if (!socio_id || !fecha_vencimiento || isNaN(creditos)) {
-        msg.textContent = 'Ingresá DNI, créditos y vencimiento.';
-        msg.className = 'text-xs text-rose-500';
+      if (!socioId || isNaN(monto) || isNaN(creditos) || !vencimiento) {
+        msg.textContent = '⚠️ Completa todos los campos obligatorios.';
+        msg.className = 'text-xs text-center font-semibold text-amber-400';
         return;
       }
 
-      const { data: datosSocio } = await _supabase
-        .from('socios')
-        .select('nombre, apellido')
-        .eq('id', socio_id)
-        .maybeSingle();
+      msg.textContent = 'Registrando pago...';
+      try {
+        const payload = {
+          socio_id: socioId,
+          plan: planNombre,
+          metodo_pago: metodo,
+          monto: monto,
+          creditos_disponibles: creditos,
+          fecha_vencimiento: vencimiento,
+          fecha_pago: new Date().toISOString()
+        };
 
-      const nombreSocioCompleto = datosSocio ? `${datosSocio.nombre} ${datosSocio.apellido}` : '';
-      const hoyStr = new Date().toISOString().split('T')[0];
+        const { error } = await _supabase.from('pagos_creditos').upsert([payload]);
+        if (error) throw error;
 
-      const { data: existePago } = await _supabase
-        .from('pagos_creditos')
-        .select('id')
-        .eq('socio_id', socio_id)
-        .maybeSingle();
-
-      let error;
-      const datosPago = {
-        socio_id,
-        nombre: nombreSocioCompleto,
-        plan: nombrePlan,
-        fecha_pago: hoyStr,
-        fecha_vencimiento,
-        creditos_totales: creditos,
-        creditos_disponibles: creditos,
-        Monto: monto,
-        metodo_pago: formaPago
-      };
-
-      if (existePago) {
-        const res = await _supabase.from('pagos_creditos').update(datosPago).eq('id', existePago.id);
-        error = res.error;
-      } else {
-        const res = await _supabase.from('pagos_creditos').insert([datosPago]);
-        error = res.error;
-      }
-
-      if (!error) {
-        msg.textContent = `✅ Pago guardado correctamente (${formaPago}).`;
-        msg.className = 'text-xs text-emerald-400';
-        cargarStatsAdmin();
-      } else {
-        msg.textContent = '❌ Error: ' + error.message;
-        msg.className = 'text-xs text-rose-500';
+        msg.textContent = '✅ Pago y créditos registrados.';
+        msg.className = 'text-xs text-center font-semibold text-emerald-400';
+        document.getElementById('pago-socio-id').value = '';
+        document.getElementById('pago-monto').value = '';
+        document.getElementById('pago-creditos').value = '';
+        cargarMetricasAdmin();
+        cargarProximosVencimientos();
+      } catch (err) {
+        msg.textContent = '❌ Error: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
       }
     }
 
     async function verTablaAdmin(nombreTabla) {
-      const contenedor = document.getElementById('tabla-resultado-admin');
-      contenedor.innerHTML = '<p class="text-zinc-400 animate-pulse">Cargando datos de ' + nombreTabla + '...</p>';
+      const visor = document.getElementById('tabla-resultado-admin');
+      visor.innerHTML = '<p class="text-zinc-400 italic text-center py-4">Cargando datos de ' + nombreTabla + '...</p>';
 
-      const { data, error } = await _supabase.from(nombreTabla).select('*');
+      try {
+        const { data, error } = await _supabase.from(nombreTabla).select('*').limit(50);
+        if (error) throw error;
 
-      if (error) {
-        contenedor.innerHTML = `<p class="text-rose-500 font-semibold">❌ Error al cargar tabla: ${error.message}</p>`;
-        return;
-      }
+        if (!data || data.length === 0) {
+          visor.innerHTML = `<p class="text-zinc-400 italic text-center py-4">La tabla <strong>${nombreTabla}</strong> está vacía.</p>`;
+          return;
+        }
 
-      if (!data || data.length === 0) {
-        contenedor.innerHTML = `<p class="text-zinc-500 italic">La tabla '${nombreTabla}' no contiene registros.</p>`;
-        return;
-      }
-
-      let html = `<table class="w-full text-left border-collapse border border-zinc-800">
-        <tr class="bg-zinc-800/80 text-zinc-300">`;
-      
-      const keys = Object.keys(data[0]);
-      keys.forEach(k => html += `<th class="p-2 border border-zinc-700/80 uppercase text-[10px] tracking-wider font-bold">${k}</th>`);
-      html += `</tr>`;
-
-      data.forEach(row => {
-        html += `<tr class="border border-zinc-800 hover:bg-zinc-800/40">`;
-        keys.forEach(k => {
-          let val = row[k];
-          if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-          if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-            val = formatFecha(val);
-          }
-          html += `<td class="p-2 border border-zinc-800 font-mono text-[11px]">${val !== null ? val : '<span class="text-zinc-600">NULL</span>'}</td>`;
+        const columnNames = Object.keys(data[0]);
+        let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-zinc-800/80 text-zinc-300 font-semibold border-b border-zinc-700">`;
+        columnNames.forEach(col => {
+          html += `<th class="p-2 border-r border-zinc-700/50 capitalize">${col.replace('_', ' ')}</th>`;
         });
-        html += `</tr>`;
-      });
-      html += `</table>`;
-      contenedor.innerHTML = html;
+        html += `</tr></thead><tbody class="divide-y divide-zinc-800">`;
+
+        data.forEach(row => {
+          html += `<tr class="hover:bg-zinc-800/40">`;
+          columnNames.forEach(col => {
+            let val = row[col];
+            if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
+            html += `<td class="p-2 border-r border-zinc-800 font-mono text-[11px]">${val !== null && val !== undefined ? val : '-'}</td>`;
+          });
+          html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+        visor.innerHTML = html;
+      } catch (err) {
+        visor.innerHTML = `<p class="text-rose-400 text-center py-4">Error al cargar tabla: ${err.message}</p>`;
+      }
     }
   </script>
 </body>
