@@ -421,31 +421,54 @@
       return diaNac === hoyObj.getDate() && mesNac === (hoyObj.getMonth() + 1);
     }
 
-    // Genera 7 botones de días rápidamente (Tabs semanales)
-    function generarPillsDias() {
-      const container = document.getElementById('selector-dias-container');
-      container.innerHTML = '';
+   // 1. Nueva función auxiliar de fecha local (poner en línea 424)
+function aFechaISO(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
-      const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-      const hoyObj = new Date();
+// Genera 7 botones de días rápidamente (Tabs semanales)
+function generarPillsDias() {
+  const container = document.getElementById('selector-dias-container');
+  container.innerHTML = '';
 
-      for (let i = 0; i < 7; i++) {
-        const d = new Date();
-        d.setDate(hoyObj.getDate() + i);
+  const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const hoyObj = new Date();
 
-        const fechaIso = d.toISOString().split('T')[0];
-        const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
-        const diaNum = String(d.getDate()).padStart(2, '0');
-        const mesNum = String(d.getMonth() + 1).padStart(2, '0');
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(hoyObj.getDate() + i);
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.fecha = fechaIso;
-        btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
-          i === 0 
-            ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
-            : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
-        }`;
+    const fechaIso = aFechaISO(d);
+    const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
+    const diaNum = String(d.getDate()).padStart(2, '0');
+    const mesNum = String(d.getMonth() + 1).padStart(2, '0');
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.fecha = fechaIso;
+    btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
+      i === 0 
+        ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
+        : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
+    }`;
+    
+    btn.innerHTML = `
+      <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
+      <span class="block text-xs font-mono font-bold">${diaNum}/${mesNum}</span>
+    `;
+
+    btn.onclick = () => seleccionarDiaTab(btn, fechaIso);
+    container.appendChild(btn);
+
+    if (i === 0) {
+      document.getElementById('reserva-fecha').value = fechaIso;
+      actualizarTurnosDisponibles();
+    }
+  }
+}
         
         btn.innerHTML = `
           <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
@@ -475,38 +498,38 @@
     // -------------------------------------------------------------
     // HORARIOS Y REGLAS DE TURNOS
     // -------------------------------------------------------------
-    function actualizarTurnosDisponibles() {
-      const inputFecha = document.getElementById('reserva-fecha').value;
-      const selectTurno = document.getElementById('reserva-turno');
-      const btnReservar = document.getElementById('btn-reservar');
-      const msg = document.getElementById('reserva-mensaje');
+function actualizarTurnosDisponibles() {
+  const inputFecha = document.getElementById('reserva-fecha').value;
+  const selectTurno = document.getElementById('reserva-turno');
+  const btnReservar = document.getElementById('btn-reservar');
+  const msg = document.getElementById('reserva-mensaje');
 
-      selectTurno.innerHTML = '';
-      msg.textContent = '';
-      btnReservar.disabled = false;
+  selectTurno.innerHTML = '';
+  msg.textContent = '';
+  btnReservar.disabled = false;
 
-      if (!inputFecha) return;
+  if (!inputFecha) return;
 
-      const partes = inputFecha.split('-');
-      const fechaObj = new Date(partes[0], partes[1] - 1, partes[2]);
-      const diaSemana = fechaObj.getDay();
+  const partes = inputFecha.split('-');
+  const fechaObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+  const diaSemana = fechaObj.getDay();
 
-      if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // L, M, V
-        selectTurno.innerHTML = `
-          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
-          <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs</option>
-        `;
-      } else if (diaSemana === 2 || diaSemana === 4) { // M, J
-        selectTurno.innerHTML = `
-          <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
-        `;
-      } else {
-        selectTurno.innerHTML = `<option value="">Cerrado</option>`;
-        msg.textContent = '❌ El gimnasio no abre los fines de semana.';
-        msg.className = 'text-xs text-center font-semibold text-amber-400';
-        btnReservar.disabled = true;
-      }
-    }
+  if (diaSemana === 1 || diaSemana === 3 || diaSemana === 5) { // L, M, V
+    selectTurno.innerHTML = `
+      <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
+      <option value="19:00 a 20:00 Hs">19:00 a 20:00 Hs</option>
+    `;
+  } else if (diaSemana === 2 || diaSemana === 4) { // M, J
+    selectTurno.innerHTML = `
+      <option value="16:00 a 17:00 Hs">16:00 a 17:00 Hs</option>
+    `;
+  } else {
+    selectTurno.innerHTML = `<option value="">Cerrado</option>`;
+    msg.textContent = '❌ El gimnasio no abre los fines de semana.';
+    msg.className = 'text-xs text-center font-semibold text-amber-400';
+    btnReservar.disabled = true;
+  }
+}
 
     // -------------------------------------------------------------
     // PORTAL DEL SOCIO
