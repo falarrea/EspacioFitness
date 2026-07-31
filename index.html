@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS & Supabase -->
+  <!-- Tailwind CSS & Supabase SDK -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -24,11 +24,16 @@
           },
           colors: {
             brand: {
-              50: '#ecfdf5',
-              400: '#34d399',
-              500: '#10b981',
-              600: '#059669',
-              900: '#064e3b',
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              200: '#fecdd3',
+              300: '#fda4af',
+              400: '#fb7185',
+              500: '#e11d48', // Rojo Carmesí principal
+              600: '#be123c',
+              700: '#9f1239',
+              800: '#881337',
+              900: '#4c0519',
             }
           }
         }
@@ -47,7 +52,7 @@
       border: 1px solid rgba(63, 63, 70, 0.4);
     }
     .glow-accent {
-      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 25px -5px rgba(225, 29, 72, 0.25);
     }
     .fade-in {
       animation: fadeIn 0.4s ease-out forwards;
@@ -62,18 +67,18 @@
     ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   </style>
 </head>
-<body class="text-zinc-100 min-h-screen flex flex-col items-center p-3 sm:p-6 antialiased selection:bg-brand-500 selection:text-black">
+<body class="text-zinc-100 min-h-screen flex flex-col items-center p-3 sm:p-6 antialiased selection:bg-brand-500 selection:text-white">
 
   <!-- HEADER / LOGO PRINCIPAL -->
   <header class="w-full max-w-5xl flex justify-between items-center mb-8 pt-2 border-b border-zinc-800/80 pb-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-teal-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-brand-500/20">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-rose-700 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-brand-500/30">
         EF
       </div>
       <div>
         <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center gap-1.5">
           <span class="text-zinc-300 font-light tracking-widest text-xs sm:text-sm uppercase block">ESPACIO</span>
-          <span class="bg-gradient-to-r from-brand-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent font-black">FITNESS</span>
+          <span class="bg-gradient-to-r from-brand-400 via-rose-300 to-red-200 bg-clip-text text-transparent font-black">FITNESS</span>
         </h1>
         <p class="text-[10px] sm:text-xs text-zinc-500 font-medium">Entrenamiento & Alto Rendimiento</p>
       </div>
@@ -109,7 +114,7 @@
           </div>
           
           <button onclick="buscarSocio()" 
-                  class="w-full bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-400 hover:to-emerald-500 text-black font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/25 active:scale-[0.98]">
+                  class="w-full bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/25 active:scale-[0.98]">
             Ingresar a la App
           </button>
         </div>
@@ -179,7 +184,7 @@
             </select>
           </div>
 
-          <button onclick="confirmarReserva()" id="btn-reservar" class="w-full bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-400 hover:to-emerald-500 text-black font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/20 active:scale-[0.98]">
+          <button onclick="confirmarReserva()" id="btn-reservar" class="w-full bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white font-extrabold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-500/25 active:scale-[0.98]">
             Confirmar Reserva
           </button>
           <p id="reserva-mensaje" class="text-xs text-center font-semibold mt-1 min-h-[1.25rem]"></p>
@@ -197,7 +202,7 @@
       <div id="admin-login-box" class="max-w-xs mx-auto glass-card p-6 rounded-3xl text-center space-y-4 border border-zinc-800">
         <h2 class="font-extrabold text-lg text-white">Acceso Administrador</h2>
         <input type="password" id="admin-pin" placeholder="Clave (Por defecto: 1234)" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-2.5 text-center text-white focus:outline-none focus:border-brand-500 font-mono">
-        <button onclick="verificarPinAdmin()" class="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-2.5 rounded-2xl transition">Ingresar</button>
+        <button onclick="verificarPinAdmin()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-extrabold py-2.5 rounded-2xl transition shadow-lg shadow-brand-500/20">Ingresar</button>
       </div>
 
       <!-- DASHBOARD ADMIN -->
@@ -309,13 +314,13 @@
                 <input type="date" id="nuevo-nacimiento" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
-            <button onclick="guardarSocio()" class="w-full bg-brand-500 hover:bg-brand-400 font-extrabold py-2.5 rounded-xl text-xs text-black transition">Guardar Socio</button>
+            <button onclick="guardarSocio()" class="w-full bg-brand-600 hover:bg-brand-500 font-extrabold py-2.5 rounded-xl text-xs text-white transition shadow-lg shadow-brand-500/20">Guardar Socio</button>
             <p id="msg-admin-socio" class="text-xs text-center font-semibold min-h-[1rem]"></p>
           </div>
 
           <!-- 3. ASIGNAR PAGO Y CRÉDITOS -->
           <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
-            <h3 class="font-bold border-b border-zinc-800 pb-2 text-emerald-400 text-xs uppercase tracking-wider">3. Cargar Pago / Plan</h3>
+            <h3 class="font-bold border-b border-zinc-800 pb-2 text-rose-400 text-xs uppercase tracking-wider">3. Cargar Pago / Plan</h3>
             <div>
               <label class="text-[11px] text-zinc-400">DNI del Socio</label>
               <input type="text" id="pago-socio-id" placeholder="DNI exacto" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white font-mono">
@@ -349,7 +354,7 @@
                 <input type="date" id="pago-vencimiento" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white">
               </div>
             </div>
-            <button onclick="registrarPago()" class="w-full bg-emerald-500 hover:bg-emerald-400 font-extrabold py-2.5 rounded-xl text-xs text-black transition">Registrar Pago</button>
+            <button onclick="registrarPago()" class="w-full bg-rose-600 hover:bg-rose-500 font-extrabold py-2.5 rounded-xl text-xs text-white transition shadow-lg shadow-rose-600/20">Registrar Pago</button>
             <p id="msg-admin-pago" class="text-xs text-center font-semibold min-h-[1rem]"></p>
           </div>
 
@@ -358,17 +363,24 @@
         <!-- VISOR DE TABLAS -->
         <div class="glass-card p-5 rounded-3xl space-y-4 border border-zinc-800">
           <div class="flex flex-wrap justify-between items-center border-b border-zinc-800 pb-3 gap-2">
-            <h3 class="font-bold text-xs text-zinc-300 uppercase tracking-wider">🔎 Visor Directo de Tablas</h3>
+            <h3 class="font-bold text-xs text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+              <span>🔎</span> Visor Directo de Tablas
+            </h3>
             <div class="flex flex-wrap gap-2">
-              <button onclick="verTablaAdmin('planes')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">🏷️ Planes</button>
-              <button onclick="verTablaAdmin('socios')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">👥 Socios</button>
-              <button onclick="verTablaAdmin('pagos_creditos')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">💳 Pagos</button>
-              <button onclick="verTablaAdmin('reservas')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-xl font-semibold border border-zinc-700">📅 Reservas</button>
+              <button onclick="verTablaAdmin('planes')" id="btn-tab-planes" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700 transition">🏷️ Planes</button>
+              <button onclick="verTablaAdmin('socios')" id="btn-tab-socios" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700 transition">👥 Socios</button>
+              <button onclick="verTablaAdmin('pagos_creditos')" id="btn-tab-pagos_creditos" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700 transition">💳 Pagos</button>
+              <button onclick="verTablaAdmin('reservas')" id="btn-tab-reservas" class="text-[11px] bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-1.5 rounded-xl font-bold border border-brand-500 transition shadow-sm">📅 Reservas por Día</button>
             </div>
           </div>
-          <div id="tabla-resultado-admin" class="overflow-x-auto max-h-72 text-xs text-zinc-300">
-            <p class="text-zinc-500 italic text-center py-4">Haz clic en cualquiera de los botones para consultar datos.</p>
+
+          <!-- CONTENEDOR DINÁMICO DEL VISOR -->
+          <div id="visor-admin-container" class="space-y-4">
+            <div id="tabla-resultado-admin" class="overflow-x-auto max-h-96 text-xs text-zinc-300">
+              <p class="text-zinc-500 italic text-center py-4">Haz clic en cualquiera de los botones para consultar datos.</p>
+            </div>
           </div>
+
         </div>
 
       </div>
@@ -388,6 +400,8 @@
     let catalogoPlanes = [];
     let modoAdmin = false;
     let adminAutenticado = false;
+    let fechaSeleccionadaAdminReservas = null;
+    let modoVistaReservasAdmin = 'por_dia'; // 'por_dia' o 'raw'
 
     // Inicializar fechas por defecto
     const hoy = new Date();
@@ -395,7 +409,7 @@
     enUnMes.setDate(enUnMes.getDate() + 30);
     document.getElementById('pago-vencimiento').valueAsDate = enUnMes;
 
-    // Generar Selector de Días de la semana para reservas
+    // Generar Selector de Días de la semana para reservas socio
     generarPillsDias();
 
     // -------------------------------------------------------------
@@ -445,6 +459,8 @@
       await cargarMetricasAdmin();
       await cargarProximosVencimientos();
       await cargarCatalogoPlanes();
+      // Por defecto al entrar abre reservas por día
+      verTablaAdmin('reservas');
     }
 
     // -------------------------------------------------------------
@@ -497,7 +513,7 @@
         btn.dataset.fecha = fechaIso;
         btn.className = `pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
           i === 0 
-            ? 'bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20' 
+            ? 'bg-brand-500 text-white border-brand-400 font-extrabold shadow-md shadow-brand-500/30' 
             : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
         }`;
         
@@ -520,7 +536,7 @@
       document.querySelectorAll('.pill-dia').forEach(b => {
         b.className = 'pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold';
       });
-      btnElement.className = 'pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 bg-brand-500 text-black border-brand-400 font-extrabold shadow-md shadow-brand-500/20';
+      btnElement.className = 'pill-dia flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 bg-brand-500 text-white border-brand-400 font-extrabold shadow-md shadow-brand-500/30';
       
       document.getElementById('reserva-fecha').value = fechaIso;
       actualizarTurnosDisponibles();
@@ -592,6 +608,8 @@
         
         const badgeEstado = document.getElementById('socio-estado-pago');
         if (pagos && pagos.length > 0) {
+          // Tomar el pago más reciente o activo
+          pagos.sort((a,b) => new Date(b.fecha_vencimiento || 0) - new Date(a.fecha_vencimiento || 0));
           pagoActual = pagos[0];
           document.getElementById('socio-plan').textContent = pagoActual.plan || "Plan Activo";
           document.getElementById('socio-creditos').textContent = pagoActual.creditos_disponibles;
@@ -864,7 +882,12 @@
       msg.textContent = 'Guardando...';
       try {
         const { error } = await _supabase.from('planes').insert([{ nombre, creditos, precio }]);
-        if (error) throw error;
+        if (error) {
+          if (error.message && error.message.includes("Could not find the 'nombre' column")) {
+            throw new Error("La columna 'nombre' no existe en la tabla 'planes' de Supabase. Ejecutá la consulta SQL proporcionada para corregir el esquema.");
+          }
+          throw error;
+        }
         msg.textContent = '✅ Plan guardado exitosamente.';
         msg.className = 'text-xs text-center font-semibold text-brand-400';
         document.getElementById('plan-nombre').value = '';
@@ -949,10 +972,15 @@
         };
 
         const { error } = await _supabase.from('pagos_creditos').upsert([payload]);
-        if (error) throw error;
+        if (error) {
+          if (error.message && error.message.includes("Could not find the 'monto' column")) {
+            throw new Error("La columna 'monto' no existe en la tabla 'pagos_creditos' de Supabase. Ejecutá la consulta SQL proporcionada para corregir la tabla.");
+          }
+          throw error;
+        }
 
         msg.textContent = '✅ Pago y créditos registrados.';
-        msg.className = 'text-xs text-center font-semibold text-emerald-400';
+        msg.className = 'text-xs text-center font-semibold text-brand-400';
         document.getElementById('pago-socio-id').value = '';
         document.getElementById('pago-monto').value = '';
         document.getElementById('pago-creditos').value = '';
@@ -964,9 +992,40 @@
       }
     }
 
+    // -------------------------------------------------------------
+    // VISOR DIRECTO DE TABLAS (CON VISTA DE RESERVAS POR DÍA)
+    // -------------------------------------------------------------
+    function resaltarBotonTab(nombreTabla) {
+      ['planes', 'socios', 'pagos_creditos', 'reservas'].forEach(tab => {
+        const btn = document.getElementById(`btn-tab-${tab}`);
+        if (btn) {
+          if (tab === nombreTabla) {
+            btn.className = 'text-[11px] bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-1.5 rounded-xl font-bold border border-brand-500 transition shadow-sm';
+          } else {
+            btn.className = 'text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700 transition';
+          }
+        }
+      });
+    }
+
     async function verTablaAdmin(nombreTabla) {
+      resaltarBotonTab(nombreTabla);
+      const visorContainer = document.getElementById('visor-admin-container');
+
+      if (nombreTabla === 'reservas') {
+        // Renderizar interfaz por día para reservas
+        await verReservasPorDiaAdmin();
+        return;
+      }
+
+      // Resto de las tablas (Planes, Socios, Pagos)
+      visorContainer.innerHTML = `
+        <div id="tabla-resultado-admin" class="overflow-x-auto max-h-96 text-xs text-zinc-300">
+          <p class="text-zinc-400 italic text-center py-4">Cargando datos de ${nombreTabla}...</p>
+        </div>
+      `;
+
       const visor = document.getElementById('tabla-resultado-admin');
-      visor.innerHTML = '<p class="text-zinc-400 italic text-center py-4">Cargando datos de ' + nombreTabla + '...</p>';
 
       try {
         const { data, error } = await _supabase.from(nombreTabla).select('*').limit(50);
@@ -980,7 +1039,7 @@
         const columnNames = Object.keys(data[0]);
         let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-zinc-800/80 text-zinc-300 font-semibold border-b border-zinc-700">`;
         columnNames.forEach(col => {
-          html += `<th class="p-2 border-r border-zinc-700/50 capitalize">${col.replace('_', ' ')}</th>`;
+          html += `<th class="p-2.5 border-r border-zinc-700/50 capitalize">${col.replace('_', ' ')}</th>`;
         });
         html += `</tr></thead><tbody class="divide-y divide-zinc-800">`;
 
@@ -989,14 +1048,301 @@
           columnNames.forEach(col => {
             let val = row[col];
             if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-            html += `<td class="p-2 border-r border-zinc-800 font-mono text-[11px]">${val !== null && val !== undefined ? val : '-'}</td>`;
+            html += `<td class="p-2.5 border-r border-zinc-800 font-mono text-[11px]">${val !== null && val !== undefined ? val : '-'}</td>`;
           });
           html += `</tr>`;
         });
         html += `</tbody></table>`;
         visor.innerHTML = html;
       } catch (err) {
-        visor.innerHTML = `<p class="text-rose-400 text-center py-4">Error al cargar tabla: ${err.message}</p>`;
+        visor.innerHTML = `<div class="p-4 bg-rose-950/40 border border-rose-800/50 rounded-2xl text-rose-300 text-xs">
+          <p class="font-bold text-rose-400 mb-1">❌ Error de Consulta a la Tabla '${nombreTabla}'</p>
+          <p>${err.message}</p>
+        </div>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // VISOR EXCLUSIVO DE RESERVAS POR DÍA (ADMIN)
+    // -------------------------------------------------------------
+    async function verReservasPorDiaAdmin() {
+      const visorContainer = document.getElementById('visor-admin-container');
+      
+      const hoyObj = new Date();
+      if (!fechaSeleccionadaAdminReservas) {
+        fechaSeleccionadaAdminReservas = aFechaISO(hoyObj);
+      }
+
+      visorContainer.innerHTML = `
+        <div class="space-y-4 fade-in">
+          <!-- SUB-BARRA DE NAVEGACIÓN DE DÍAS -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">
+            <div>
+              <p class="text-[11px] text-zinc-400 font-bold uppercase tracking-wider">Filtrar Reservas por Día de la Semana</p>
+              <p class="text-xs text-zinc-300 font-semibold" id="label-dia-seleccionado-admin">Cargando fecha...</p>
+            </div>
+            
+            <div class="flex gap-2 items-center">
+              <input type="date" id="admin-reserva-datepicker" value="${fechaSeleccionadaAdminReservas}" 
+                     onchange="cambiarFechaReservasAdmin(this.value)"
+                     class="bg-zinc-800 border border-zinc-700 text-xs text-white px-3 py-1.5 rounded-xl font-mono focus:outline-none focus:border-brand-500">
+              <button onclick="alternarModoVistaReservas()" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl font-semibold border border-zinc-700/80">
+                ${modoVistaReservasAdmin === 'por_dia' ? '📊 Ver Tabla Completa' : '📅 Ver por Día'}
+              </button>
+            </div>
+          </div>
+
+          <!-- CAROUSEL DE BOTONES DE DÍAS -->
+          <div id="dias-semana-admin-bar" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          </div>
+
+          <!-- CONTENIDO DE LISTADO DE RESERVAS DEL DÍA -->
+          <div id="contenido-reservas-dia-admin" class="min-h-[160px]">
+            <p class="text-zinc-500 italic text-center py-6">Cargando reservas del día...</p>
+          </div>
+        </div>
+      `;
+
+      generarPillsDiasAdmin();
+      await cargarReservasDelDiaAdmin(fechaSeleccionadaAdminReservas);
+    }
+
+    function generarPillsDiasAdmin() {
+      const bar = document.getElementById('dias-semana-admin-bar');
+      if (!bar) return;
+      bar.innerHTML = '';
+
+      const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const hoyObj = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(hoyObj.getDate() + i);
+        const fechaIso = aFechaISO(d);
+        const diaNombre = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : diasNombre[d.getDay()]);
+        const diaNum = String(d.getDate()).padStart(2, '0');
+        const mesNum = String(d.getMonth() + 1).padStart(2, '0');
+
+        const esSeleccionado = fechaIso === fechaSeleccionadaAdminReservas;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `flex-shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all duration-200 ${
+          esSeleccionado 
+            ? 'bg-brand-600 text-white border-brand-500 font-extrabold shadow-md shadow-brand-500/30 ring-2 ring-brand-500/20' 
+            : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-700 font-semibold'
+        }`;
+
+        btn.innerHTML = `
+          <span class="block text-[10px] uppercase opacity-80">${diaNombre}</span>
+          <span class="block text-xs font-mono font-bold">${diaNum}/${mesNum}</span>
+        `;
+
+        btn.onclick = () => cambiarFechaReservasAdmin(fechaIso);
+        bar.appendChild(btn);
+      }
+    }
+
+    async function cambiarFechaReservasAdmin(fechaIso) {
+      fechaSeleccionadaAdminReservas = fechaIso;
+      const datepicker = document.getElementById('admin-reserva-datepicker');
+      if (datepicker) datepicker.value = fechaIso;
+
+      generarPillsDiasAdmin();
+      await cargarReservasDelDiaAdmin(fechaIso);
+    }
+
+    function alternarModoVistaReservas() {
+      modoVistaReservasAdmin = modoVistaReservasAdmin === 'por_dia' ? 'raw' : 'por_dia';
+      if (modoVistaReservasAdmin === 'raw') {
+        const visorContainer = document.getElementById('visor-admin-container');
+        visorContainer.innerHTML = `
+          <div class="mb-3 flex justify-between items-center bg-zinc-900 p-2.5 rounded-2xl border border-zinc-800">
+            <span class="text-xs text-zinc-400 font-bold">Vista Raw de la Tabla 'reservas'</span>
+            <button onclick="alternarModoVistaReservas()" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1 rounded-xl font-bold">📅 Volver a Vista por Día</button>
+          </div>
+          <div id="tabla-resultado-admin" class="overflow-x-auto max-h-96 text-xs text-zinc-300"></div>
+        `;
+        verTablaRawReservas();
+      } else {
+        verReservasPorDiaAdmin();
+      }
+    }
+
+    async function verTablaRawReservas() {
+      const visor = document.getElementById('tabla-resultado-admin');
+      if (!visor) return;
+      visor.innerHTML = '<p class="text-zinc-400 italic text-center py-4">Cargando todas las reservas...</p>';
+      try {
+        const { data, error } = await _supabase.from('reservas').select('*').order('fecha', { ascending: false }).limit(100);
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          visor.innerHTML = '<p class="text-zinc-400 italic text-center py-4">No hay reservas registradas.</p>';
+          return;
+        }
+        const cols = Object.keys(data[0]);
+        let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-zinc-800/80 text-zinc-300 font-semibold border-b border-zinc-700">`;
+        cols.forEach(c => html += `<th class="p-2 border-r border-zinc-700/50 capitalize">${c.replace('_',' ')}</th>`);
+        html += `</tr></thead><tbody class="divide-y divide-zinc-800">`;
+        data.forEach(r => {
+          html += `<tr class="hover:bg-zinc-800/40">`;
+          cols.forEach(c => html += `<td class="p-2 border-r border-zinc-800 font-mono text-[11px]">${r[c] !== null ? r[c] : '-'}</td>`);
+          html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+        visor.innerHTML = html;
+      } catch (err) {
+        visor.innerHTML = `<p class="text-rose-400 text-center py-4">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function cargarReservasDelDiaAdmin(fechaIso) {
+      const contenedor = document.getElementById('contenido-reservas-dia-admin');
+      const label = document.getElementById('label-dia-seleccionado-admin');
+      if (!contenedor) return;
+
+      const partes = fechaIso.split('-');
+      const fechaObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+      const diasNombre = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const diaTexto = `${diasNombre[fechaObj.getDay()]} ${partes[2]}/${partes[1]}/${partes[0]}`;
+
+      if (label) label.textContent = `Mostrando clases del ${diaTexto}`;
+
+      contenedor.innerHTML = '<p class="text-zinc-400 italic text-center py-6">Consultando reservas y socios registrados...</p>';
+
+      try {
+        // 1. Obtener todas las reservas para la fecha seleccionada
+        const { data: reservas, error: errReservas } = await _supabase
+          .from('reservas')
+          .select('*')
+          .eq('fecha', fechaIso);
+
+        if (errReservas) throw errReservas;
+
+        // 2. Obtener lista de socios para cruzamiento de nombres
+        const { data: socios, error: errSocios } = await _supabase
+          .from('socios')
+          .select('id, nombre, apellido, telefono, estado');
+
+        if (errSocios) console.warn("No se pudieron cargar nombres completos de socios:", errSocios);
+
+        const mapaSocios = {};
+        if (socios) {
+          socios.forEach(s => {
+            mapaSocios[s.id] = s;
+          });
+        }
+
+        if (!reservas || reservas.length === 0) {
+          contenedor.innerHTML = `
+            <div class="bg-zinc-900/60 p-8 rounded-2xl border border-zinc-800 text-center space-y-2">
+              <span class="text-3xl">🏜️</span>
+              <p class="text-sm font-bold text-zinc-300">No hay personas inscriptas para el ${diaTexto}</p>
+              <p class="text-xs text-zinc-500">Los turnos disponibles están listos para recibir reservas.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Agrupar reservas por turno/horario
+        const turnosDisponibles = ["16:00 a 17:00 Hs", "19:00 a 20:00 Hs"];
+        const gruposTurnos = {};
+
+        // Inicializar turnos
+        turnosDisponibles.forEach(t => gruposTurnos[t] = []);
+
+        // Distribuir reservas
+        reservas.forEach(r => {
+          if (!gruposTurnos[r.turno]) {
+            gruposTurnos[r.turno] = [];
+          }
+          gruposTurnos[r.turno].push(r);
+        });
+
+        let html = `<div class="space-y-5">`;
+
+        Object.keys(gruposTurnos).forEach(turnoKey => {
+          const listaRes = gruposTurnos[turnoKey];
+          const ocupantes = listaRes.length;
+
+          html += `
+            <div class="bg-zinc-900/90 rounded-2xl border border-zinc-800 overflow-hidden shadow-lg">
+              <div class="p-3.5 bg-zinc-800/80 border-b border-zinc-700/80 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${ocupantes > 0 ? 'bg-brand-500 shadow-sm shadow-brand-500' : 'bg-zinc-600'}"></span>
+                  <h4 class="font-extrabold text-sm text-white tracking-tight">Turno: ${turnoKey}</h4>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold ${ocupantes >= MAX_CUPO_POR_CLASE ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-brand-400 bg-brand-500/10 border-brand-500/20'} px-2.5 py-0.5 rounded-full border">
+                    ${ocupantes} / ${MAX_CUPO_POR_CLASE} Cupos Ocupados
+                  </span>
+                </div>
+              </div>
+          `;
+
+          if (listaRes.length === 0) {
+            html += `
+              <div class="p-4 text-center text-xs text-zinc-500 italic">
+                Sin inscriptos en este turno aún.
+              </div>
+            `;
+          } else {
+            html += `
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="text-zinc-400 border-b border-zinc-800 bg-zinc-950/40 text-[11px] uppercase tracking-wider font-semibold">
+                      <th class="p-2.5 pl-4">#</th>
+                      <th class="p-2.5">DNI / ID Socio</th>
+                      <th class="p-2.5">Nombre y Apellido</th>
+                      <th class="p-2.5">Teléfono / Contacto</th>
+                      <th class="p-2.5">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800/60">
+            `;
+
+            listaRes.forEach((res, idx) => {
+              const socioObj = mapaSocios[res.socio_id] || {};
+              const nombreCompleto = socioObj.nombre ? `${socioObj.nombre} ${socioObj.apellido || ''}` : 'Socio Registrado';
+              const telefono = socioObj.telefono || 'Sin registrar';
+              const estadoSocio = socioObj.estado || 'ACTIVO';
+
+              html += `
+                <tr class="hover:bg-zinc-800/40 transition-colors">
+                  <td class="p-2.5 pl-4 font-mono text-zinc-500">${idx + 1}</td>
+                  <td class="p-2.5 font-mono font-bold text-brand-400">${res.socio_id}</td>
+                  <td class="p-2.5 font-bold text-white">${nombreCompleto}</td>
+                  <td class="p-2.5 font-mono text-zinc-400">${telefono}</td>
+                  <td class="p-2.5">
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${estadoSocio === 'ACTIVO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                      ${estadoSocio}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            });
+
+            html += `
+                  </tbody>
+                </table>
+              </div>
+            `;
+          }
+
+          html += `</div>`;
+        });
+
+        html += `</div>`;
+        contenedor.innerHTML = html;
+
+      } catch (err) {
+        contenedor.innerHTML = `
+          <div class="p-4 bg-rose-950/40 border border-rose-800/50 rounded-2xl text-rose-300 text-xs">
+            <p class="font-bold text-rose-400 mb-1">❌ Error al cargar reservas del día</p>
+            <p>${err.message}</p>
+          </div>
+        `;
       }
     }
   </script>
