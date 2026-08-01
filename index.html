@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Espacio Fitness - App Oficial</title>
   
+  <!-- Manifest & Meta Tags PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e11d48">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Espacio Fitness">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2964/2964514.png">
+  
   <!-- Tipografía Premium Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,7 +78,7 @@
 <body class="text-zinc-100 min-h-screen flex flex-col items-center p-3 sm:p-6 antialiased selection:bg-brand-500 selection:text-white">
 
   <!-- HEADER / LOGO PRINCIPAL -->
-  <header class="w-full max-w-5xl flex justify-between items-center mb-8 pt-2 border-b border-zinc-800/80 pb-4">
+  <header class="w-full max-w-5xl flex justify-between items-center mb-8 pt-2 border-b border-zinc-800/80 pb-4 gap-2">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-rose-700 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-brand-500/30">
         EF
@@ -84,9 +92,16 @@
       </div>
     </div>
 
-    <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="glass-card hover:bg-zinc-800/80 text-zinc-300 text-xs px-3.5 py-2 rounded-xl font-semibold border border-zinc-700/60 transition-all duration-200 flex items-center gap-2 active:scale-95">
-      <span>🔒</span> <span id="texto-btn-vista" class="hidden sm:inline">Panel Administrador</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <!-- BOTÓN INSTALAR PWA -->
+      <button id="btn-instalar-pwa" onclick="instalarPWA()" class="hidden glass-card text-brand-400 hover:bg-brand-500/10 text-xs px-3 py-2 rounded-xl font-bold border border-brand-500/30 transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+        <span>📲</span> <span class="hidden sm:inline">Instalar App</span>
+      </button>
+
+      <button onclick="toggleModoAdmin()" id="btn-modo-admin" class="glass-card hover:bg-zinc-800/80 text-zinc-300 text-xs px-3.5 py-2 rounded-xl font-semibold border border-zinc-700/60 transition-all duration-200 flex items-center gap-2 active:scale-95">
+        <span>🔒</span> <span id="texto-btn-vista" class="hidden sm:inline">Panel Administrador</span>
+      </button>
+    </div>
   </header>
 
   <!-- CONTENEDOR PRINCIPAL -->
@@ -110,6 +125,7 @@
         <div class="space-y-3">
           <div class="relative">
             <input type="text" id="socio-id" placeholder="Insertar DNI o Código Socio" 
+                   onkeyup="if(event.key === 'Enter') buscarSocio()"
                    class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition text-center font-mono text-lg font-bold">
           </div>
           
@@ -157,6 +173,21 @@
               <p class="text-[11px] text-zinc-400 font-medium">Fecha Vencimiento</p>
               <p id="socio-vencimiento" class="text-sm font-bold text-zinc-200 mt-1.5 font-mono">-</p>
             </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- NUEVA SECCIÓN: MIS RESERVAS ACTIVAS (CON CANCELACIÓN)  -->
+        <!-- ======================================================= -->
+        <div class="glass-card p-5 rounded-3xl border border-zinc-800/80 space-y-3">
+          <div class="flex justify-between items-center border-b border-zinc-800 pb-2.5">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span>📋</span> Mis Reservas Confirmadas
+            </h3>
+            <span id="cant-mis-reservas" class="text-[11px] bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded-full font-bold">0</span>
+          </div>
+          <div id="lista-mis-reservas-socio" class="space-y-2 text-xs">
+            <p class="text-zinc-500 italic text-center py-2">Consultando tus reservas...</p>
           </div>
         </div>
 
@@ -208,7 +239,7 @@
       <!-- DASHBOARD ADMIN -->
       <div id="admin-dashboard" class="hidden space-y-6">
 
-        <!-- STATUS API SUPABASE (Verde para estado OK) -->
+        <!-- STATUS API SUPABASE -->
         <div id="api-status-card" class="glass-card p-4 rounded-2xl flex items-center justify-between border border-zinc-800">
           <div class="flex items-center gap-3">
             <span id="status-dot" class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span>
@@ -240,9 +271,7 @@
           </div>
         </div>
 
-        <!-- ======================================================= -->
-        <!-- NUEVA SECCIÓN: GESTIÓN OPERATIVA Y BÚSQUEDA DE SOCIO   -->
-        <!-- ======================================================= -->
+        <!-- SECCIÓN: GESTIÓN OPERATIVA Y BÚSQUEDA DE SOCIO -->
         <div class="glass-card p-5 sm:p-6 rounded-3xl border border-zinc-800/90 space-y-4 glow-accent">
           <div class="flex flex-wrap justify-between items-center border-b border-zinc-800 pb-3 gap-2">
             <div>
@@ -254,7 +283,6 @@
             <span class="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1 rounded-full text-zinc-300 font-mono">Panel Rápido</span>
           </div>
 
-          <!-- CAMPO DE BÚSQUEDA -->
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="relative flex-grow">
               <input type="text" id="admin-socio-search-input" 
@@ -268,7 +296,6 @@
             </button>
           </div>
 
-          <!-- RESULTADO DE LA BÚSQUEDA Y FICHA DEL SOCIO -->
           <div id="admin-socio-resultado-operativo" class="min-h-[60px]">
             <p class="text-zinc-500 italic text-center py-4 text-xs">Ingresá un DNI o Nombre arriba para ver la ficha completa y cambiar la condición del socio.</p>
           </div>
@@ -436,6 +463,36 @@
     let adminAutenticado = false;
     let fechaSeleccionadaAdminReservas = null;
     let modoVistaReservasAdmin = 'por_dia';
+
+    // -------------------------------------------------------------
+    // REGISTRO Y GESTIÓN PWA (PROGRESIVE WEB APP)
+    // -------------------------------------------------------------
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btn-instalar-pwa');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    async function instalarPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        const btn = document.getElementById('btn-instalar-pwa');
+        if (btn) btn.classList.add('hidden');
+      }
+      deferredPrompt = null;
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA Service Worker listo:', reg.scope))
+          .catch(err => console.warn('PWA SW error:', err));
+      });
+    }
 
     // Inicializar fechas por defecto
     const hoy = new Date();
@@ -647,7 +704,7 @@
           document.getElementById('socio-creditos').textContent = pagoActual.creditos_disponibles;
           document.getElementById('socio-vencimiento').textContent = formatFecha(pagoActual.fecha_vencimiento);
 
-          const hoyStr = new Date().toISOString().split('T')[0];
+          const hoyStr = aFechaISO(new Date());
           if (pagoActual.fecha_vencimiento < hoyStr || socio.estado === 'INACTIVO' || socio.estado === 'SUSPENDIDO') {
             badgeEstado.textContent = socio.estado !== 'ACTIVO' ? socio.estado : 'VENCIDO';
             badgeEstado.className = 'text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20';
@@ -666,8 +723,114 @@
 
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('socio-panel').classList.remove('hidden');
+
+        // Cargar las reservas confirmadas del socio
+        await cargarMisReservasSocio();
       } catch (err) {
         msg.textContent = 'Error de conexión con Supabase.';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MIS RESERVAS Y CANCELACIÓN CON DEVOLUCIÓN DE CRÉDITOS
+    // -------------------------------------------------------------
+    async function cargarMisReservasSocio() {
+      const contenedor = document.getElementById('lista-mis-reservas-socio');
+      const cantSpan = document.getElementById('cant-mis-reservas');
+      if (!contenedor || !socioActual) return;
+
+      contenedor.innerHTML = '<p class="text-zinc-500 italic text-center py-2">Cargando tus reservas confirmadas...</p>';
+
+      try {
+        const hoyStr = aFechaISO(new Date());
+        const { data: reservas, error } = await _supabase
+          .from('reservas')
+          .select('*')
+          .eq('socio_id', socioActual.id)
+          .gte('fecha', hoyStr)
+          .order('fecha', { ascending: true });
+
+        if (error) throw error;
+
+        cantSpan.textContent = reservas ? reservas.length : 0;
+
+        if (!reservas || reservas.length === 0) {
+          contenedor.innerHTML = `
+            <div class="p-3 bg-zinc-900/60 rounded-2xl text-center border border-zinc-800">
+              <p class="text-zinc-400 font-medium text-xs">No tenés ninguna reserva activa actualmente.</p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">Podés reservar una clase en la sección de abajo.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        reservas.forEach(r => {
+          const partes = r.fecha.split('-');
+          const fechaObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+          const diasNombre = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+          const diaTexto = `${diasNombre[fechaObj.getDay()]} ${partes[2]}/${partes[1]}`;
+
+          html += `
+            <div class="flex justify-between items-center bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800 shadow-sm">
+              <div>
+                <p class="font-extrabold text-white text-xs">${diaTexto}</p>
+                <p class="text-[11px] text-brand-400 font-mono font-semibold">⏰ ${r.turno}</p>
+              </div>
+              <button onclick="cancelarReservaSocio(${r.id}, '${r.fecha}', '${r.turno}')" 
+                      class="text-[11px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700/60 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1 active:scale-95">
+                <span>❌</span> Cancelar
+              </button>
+            </div>
+          `;
+        });
+
+        contenedor.innerHTML = html;
+      } catch (err) {
+        contenedor.innerHTML = `<p class="text-rose-400 text-center py-2 text-xs">Error al cargar reservas: ${err.message}</p>`;
+      }
+    }
+
+    async function cancelarReservaSocio(reservaId, fechaStr, turnoStr) {
+      if (!confirm(`¿Deseás cancelar tu reserva para el ${formatFecha(fechaStr)} (${turnoStr})?\n\n✨ Se devolverá 1 crédito a tu plan activo.`)) {
+        return;
+      }
+
+      const msg = document.getElementById('reserva-mensaje');
+      msg.textContent = 'Procesando cancelación...';
+      msg.className = 'text-xs text-center font-semibold text-amber-400';
+
+      try {
+        // 1. Eliminar la reserva de Supabase
+        const { error: errDelete } = await _supabase
+          .from('reservas')
+          .delete()
+          .eq('id', reservaId);
+
+        if (errDelete) throw errDelete;
+
+        // 2. Devolver 1 crédito al socio
+        if (pagoActual && pagoActual.id) {
+          const nuevosCreditos = (pagoActual.creditos_disponibles || 0) + 1;
+          const { error: errPago } = await _supabase
+            .from('pagos_creditos')
+            .update({ creditos_disponibles: nuevosCreditos })
+            .eq('id', pagoActual.id);
+
+          if (errPago) throw errPago;
+
+          pagoActual.creditos_disponibles = nuevosCreditos;
+          document.getElementById('socio-creditos').textContent = nuevosCreditos;
+        }
+
+        msg.textContent = '✅ Reserva cancelada. Se acreditó 1 crédito de vuelta a tu cuenta.';
+        msg.className = 'text-xs text-center font-bold text-emerald-400';
+
+        // 3. Recargar lista de reservas
+        await cargarMisReservasSocio();
+      } catch (err) {
+        msg.textContent = '❌ Error al cancelar reserva: ' + err.message;
+        msg.className = 'text-xs text-center font-semibold text-rose-500';
       }
     }
 
@@ -744,9 +907,11 @@
         pagoActual.creditos_disponibles = nuevosCreditos;
         document.getElementById('socio-creditos').textContent = nuevosCreditos;
 
-        // Éxito en Verde representativo
         msg.textContent = '🎉 ¡Reserva realizada con éxito!';
         msg.className = 'text-xs text-center font-bold text-emerald-400';
+
+        // Actualizar reservas del socio
+        await cargarMisReservasSocio();
       } catch (err) {
         msg.textContent = '❌ Error al procesar reserva: ' + err.message;
         msg.className = 'text-xs text-center font-semibold text-rose-500';
@@ -767,7 +932,6 @@
       try {
         const { error } = await _supabase.from('socios').select('count', { count: 'exact', head: true });
         if (error) throw error;
-        // Verde representativo para estado Correcto / Online
         dot.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500';
         txt.textContent = 'Conexión activa y funcionando correctamente.';
       } catch (err) {
@@ -784,7 +948,7 @@
         const { data: socios } = await _supabase.from('socios').select('*');
         const { data: pagos } = await _supabase.from('pagos_creditos').select('*');
 
-        const hoyStr = new Date().toISOString().split('T')[0];
+        const hoyStr = aFechaISO(new Date());
         let vencidosCount = 0;
         let activosCount = 0;
 
@@ -822,9 +986,6 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // NUEVA FUNCIÓN: BÚSQUEDA Y CONTROL OPERATIVO DE SOCIO (ADMIN)
-    // -------------------------------------------------------------
     async function buscarSocioOperativo() {
       const input = document.getElementById('admin-socio-search-input').value.trim();
       const contenedor = document.getElementById('admin-socio-resultado-operativo');
@@ -838,7 +999,6 @@
       contenedor.innerHTML = '<p class="text-zinc-400 italic text-center py-4 text-xs">Buscando socios coincidentes...</p>';
 
       try {
-        // Buscar por id (DNI exacto) o ilike en nombre / apellido
         const { data: coincidenciaDni } = await _supabase
           .from('socios')
           .select('*')
@@ -865,11 +1025,9 @@
           return;
         }
 
-        // Renderizar fichas de socios encontrados
         let html = `<div class="space-y-4 fade-in">`;
         
         for (const socio of sociosEncontrados) {
-          // Consultar último pago/plan del socio
           const { data: pagos } = await _supabase
             .from('pagos_creditos')
             .select('*')
@@ -887,7 +1045,7 @@
             creditosInfo = ultimoPago.creditos_disponibles ?? 0;
             vencimientoInfo = formatFecha(ultimoPago.fecha_vencimiento);
 
-            const hoyStr = new Date().toISOString().split('T')[0];
+            const hoyStr = aFechaISO(new Date());
             if (ultimoPago.fecha_vencimiento < hoyStr) {
               estadoPlanBadge = '<span class="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold uppercase">PLAN VENCIDO</span>';
             } else {
@@ -895,7 +1053,6 @@
             }
           }
 
-          // Badge de estado de socio
           let estadoSocioBadge = '';
           if (socio.estado === 'ACTIVO') {
             estadoSocioBadge = '<span class="text-xs font-bold uppercase px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">🟢 ACTIVO</span>';
@@ -907,7 +1064,6 @@
 
           html += `
             <div class="bg-zinc-900/90 rounded-2xl p-5 border border-zinc-800 space-y-4 shadow-xl">
-              <!-- HEADER DE LA FICHA -->
               <div class="flex flex-wrap justify-between items-start gap-3 border-b border-zinc-800 pb-3">
                 <div>
                   <div class="flex items-center gap-2">
@@ -921,7 +1077,6 @@
                 </div>
               </div>
 
-              <!-- RESUMEN DE PLAN Y ESTADO FINANCIERO -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-950/60 p-3 rounded-xl border border-zinc-800/80 text-xs">
                 <div>
                   <span class="text-zinc-500 block text-[10px] uppercase font-semibold">Plan Actual</span>
@@ -940,7 +1095,6 @@
                 </div>
               </div>
 
-              <!-- BOTONES OPERATIVOS DE CAMBIO RÁPIDO DE ESTADO -->
               <div class="space-y-2 pt-1">
                 <p class="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">Cambiar Condición Operativa del Socio:</p>
                 <div class="flex flex-wrap gap-2">
@@ -983,7 +1137,6 @@
 
         if (error) throw error;
 
-        // Refrescar búsqueda y métricas
         await buscarSocioOperativo();
         await cargarMetricasAdmin();
       } catch (err) {
@@ -1391,7 +1544,7 @@
           cols.forEach(c => html += `<td class="p-2 border-r border-zinc-800 font-mono text-[11px]">${r[c] !== null ? r[c] : '-'}</td>`);
           html += `</tr>`;
         });
-        html += `</tbody>mtable>`;
+        html += `</tbody></table>`;
         visor.innerHTML = html;
       } catch (err) {
         visor.innerHTML = `<p class="text-rose-400 text-center py-4">Error: ${err.message}</p>`;
